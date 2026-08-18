@@ -1,0 +1,34 @@
+<!--<!DOCTYPE html>
+<html>
+<head><title>Inicio</title></head>
+<body>
+  <h1>Bienvenido al Servidor Estático</h1>
+  <p>Esta es la página principal.</p>
+  <a href="/otra.html">Ir a otra página</a>
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Cambiar Color</title>
+<style>
+  #miTexto {
+    color: rgb(253, 253, 253);
+  }
+</style>
+</head>
+<body>
+
+<p id="miTexto">Este es un texto.</p>
+<button onclick="cambiarColor()">Cambiar Color</button>
+
+<script>
+  function cambiarColor() {
+    var texto = document.getElementById("miTexto");
+    texto.style.background = "red";
+  }
+</script>
+
+</body>
+</html>
