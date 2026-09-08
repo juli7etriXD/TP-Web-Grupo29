@@ -1,19 +1,19 @@
 CREATE TABLE libro(
-    id INT PRIMARY KEY SERIAL,
+    id SERIAL PRIMARY KEY,
     titulo VARCHAR(100) NOT NULL,
     autor VARCHAR(100) NOT NULL,
     fecha_publicacion DATE NOT NULL,
-    genero VARCHAR(50) NOT NULL,
-)
+    genero VARCHAR(50) NOT NULL
+);
 
 CREATE TABLE usuario(
-    id INT PRIMARY KEY SERIAL,
+    id SERIAL PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
     apellido VARCHAR(100) NOT NULL,
-    correo_electronico VARCHAR(100) NOT NULL UNIQUE,
-    password VARCHAR(20) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
     fecha_nacimiento DATE NOT NULL
-)
+);
 
 CREATE TABLE usuario_libro(
     usuario_id INT NOT NULL,
