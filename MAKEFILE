@@ -14,7 +14,7 @@ test:
 	set -Eeuo pipefail
 	trap '$(MAKE) down' EXIT
 	$(MAKE) prepare
-	go test -v ./tests/...
+	go test -v ./test/...
 
 prepare: clean generate build up wait-db
 
