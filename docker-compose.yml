@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: tp2-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - ./db/schema/schema.sql:/docker-entrypoint-initdb.d/init.sql #entry point para inicializar la base de datos con el script schema.sql
+      - pgdata:/var/lib/postgresql/data 
+
+volumes:
+  pgdata:
