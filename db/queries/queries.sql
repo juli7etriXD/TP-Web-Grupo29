@@ -40,6 +40,16 @@ WHERE ul.libro_id = $1 AND ul.leido = true;
 
 -- Update
 
+-- name: UpdateUser :exec
+UPDATE usuario
+SET nombre = $1, apellido = $2, email = $3, password = $4
+WHERE id = $5;
+
+-- name: UpdateLibro :exec
+UPDATE libro
+SET titulo = $1, autor = $2, fecha_publicacion = $3, genero = $4
+WHERE id = $5;
+
 -- name: UpdateEstadoUsuarioLibro :exec
 UPDATE usuario_libro
 SET leido = $1, fecha_lectura = CURRENT_TIMESTAMP
