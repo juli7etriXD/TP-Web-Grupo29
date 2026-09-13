@@ -69,7 +69,10 @@ Antes de ejecutar el proyecto, asegúrate de tener instalados:
 ## Configuración del entorno para tp2
 
 ```bash
-git clone --branch tp2 --single-branch https://github.com/usuario/proyecto.git
+git clone --branch tp2 --single-branch https://github.com/juli7etriXD/TP-Web-Grupo29.git
+```
+
+```
 cd TP-Web-Grupo29/
 ```
 
