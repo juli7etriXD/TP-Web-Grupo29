@@ -17,21 +17,6 @@ go build ./...
 echo "--> Levantando base de datos PostgreSQL..."
 docker compose up -d --remove-orphans
 
-if [ ! -f ".env" ]; then
-    archivo=".env.example"
-else
-    archivo=".env"
-fi
-
-echo "Usando $archivo"
-
-# Cargar las variables del archivo seleccionado en la sesión actual
-if [ -f "$archivo" ]; then
-    set -a
-    source "$archivo"
-    set +a
-fi
-
 conecto=false
 
 echo "--> Esperando a que PostgreSQL esté listo..."
@@ -47,7 +32,7 @@ done
 if [ "$conecto" = true ]; then
     # Ejecutar tests
     echo "--> Ejecutando tests..."
-    go test -v ./test/...
+    go test -v ./tests/...
 else
     echo "ERROR: PostgreSQL no estuvo listo después de 60 segundos." >&2
     exit 1

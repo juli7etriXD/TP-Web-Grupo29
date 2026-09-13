@@ -1,49 +1,110 @@
 # Mi Biblioteca
 
-Aplicación web en Go para gestionar usuarios y el seguimiento de sus libros leídos.
+Aplicación web desarrollada en Go para gestionar usuarios y controlar qué libros fueron leídos por cada uno. Permitiendo a los usuarios saber que libros leyeron, agregar un libro que leyeron y eliminar un libro que leyeron hace mucho tiempo.
+
+## Objetivo
+
+Permitir llevar un registro de:
+
+- Usuarios
+- Libros
+- Estado de lectura (`leído / no leído`)
 
 ## Tecnologías utilizadas
 
-- **Go** (1.22+)
-- **PostgreSQL** (16)
-- **sqlc** (para la generación de código Go tipado a partir de SQL)
-- **HTML/CSS** básico
+- Go
+- PostgreSQL
+- sqlc
+- Docker y Docker Compose
+- HTML
+
+## Funcionalidades principales
+
+- Registro de usuarios
+- Alta, edición y eliminación de libros
+- Asociación de libros a usuarios
+- Marcado de libros como leídos
+- Consulta de libros leídos por usuario
+- Consulta de usuarios que leyeron un libro
 
 ## Estructura del proyecto
 
 ```text
+.
 ├── db/
-│   ├── queries/       # Consultas SQL (CRUD)
-│   ├── schema/        # Definición de tablas (PostgreSQL)
-│   └── sqlc/          # Código Go generado automáticamente por sqlc
-├── static/            # Archivos estáticos del frontend (HTML, etc.)
-├── go.mod             # Definición del módulo y dependencias de Go
-├── go.sum             # Checksums de dependencias
-├── main.go            # Servidor HTTP y punto de entrada
-└── sqlc.yaml          # Configuración de sqlc
+│   ├── queries/
+│   │   └── queries.sql          # Consultas SQL con anotaciones de 
+│   ├── schema/
+│   │   └── schema.sql           # Definición de tablas de PostgreSQL
+│   └── sqlc/                   # Código generado por sqlc
+├── static/
+│   └── index.html              # Frontend estático básico
+├── docker-compose.yml          # Configuración del contenedor de PostgreSQL
+├── go.mod                      # Dependencias del módulo Go
+├── go.sum                      # Lockfile de dependencias
+├── main.go                     # Servidor HTTP principal
+├── Makefile                    # Comandos útiles del proyecto
+├── sqlc.yaml                   # Configuración de sqlc
+├── test.sh                     # Script de validación automática
+├── tests/                      # Pruebas del proyecto
+└── README.md                   # Documentación del proyecto
 ```
 
-## Ejecución con Docker (Recomendada)
+## Base de datos ```(schema.sql)```
 
-## Ejecución local (sin Docker)
+El esquema principal está definido en estas tablas:
 
-### Requisitos previos
-- [Go](https://go.dev/dl/) (1.22 o superior)
-- [PostgreSQL](https://www.postgresql.org/) en ejecución en el puerto 5432
+- `libro`: Almacena la información de los libros (`id`,`titulo`,`autor`,`fecha_publicacion`,`genero`).
+- `usuario`: Guarda las cuentas e información de los usuarios (`id`,`nombre`,`apellido`,`email`,`password`,`fecha_nacimiento`).
+- `usuario_libro`: Relación muchos a muchos entre usuarios y libros para el seguimiento de lecturas (`usuario_id`,`libro_id`,`leido`,`fecha_lectura`).
 
-### Pasos
-1. **Crear la base de datos y tablas:**
-   ```bash
-   psql -U postgres -d biblioteca -f db/schema/schema.sql
-   ```
+## Requisitos previos
 
-2. **(Opcional) Regenerar código con sqlc:**
-   Si hacés cambios en `db/schema/` o `db/queries/`:
-   ```bash
-   sqlc generate
-   ```
+Antes de ejecutar el proyecto, asegúrate de tener instalados:
 
-3. **Iniciar el servidor:**
-   ```bash
-   go run .
-   ```
+- [Go](https://go.dev/dl/) 1.22 o superior
+- [Docker](https://www.docker.com/products/docker-desktop/) y Docker Compose
+- [sqlc](https://sqlc.dev/)
+
+## Configuración del entorno para tp2
+
+```bash
+git clone --branch tp2 --single-branch https://github.com/usuario/proyecto.git
+cd TP-Web-Grupo29/
+```
+
+## Ejecución del proyecto
+
+Antes de iniciar la aplicación:
+
+```bash
+make test
+```
+
+o
+
+```bash
+./test.sh
+```
+
+### ¿Qué hace `./test.sh`?
+
+- borra contenedores y volúmenes anteriores
+- levanta la base de datos
+- genera el código SQL con `sqlc`
+- compila el proyecto
+- ejecuta los tests
+- limpia al finalizar
+
+### Detener los servicios
+
+```bash
+make stop
+```
+
+## Autores
+
+- Franco Nelli
+- Martin Ojeda
+- Julian Rivero
+

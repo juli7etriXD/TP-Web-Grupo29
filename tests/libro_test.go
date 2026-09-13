@@ -21,6 +21,7 @@ func TestLibro_CRUD(t *testing.T) {
 		FechaPublicacion: time.Date(1944, 1, 1, 0, 0, 0, 0, time.UTC),
 		Genero:           "Ficción",
 	})
+
 	if err != nil {
 		t.Fatalf("Error al crear libro: %v", err)
 	}
