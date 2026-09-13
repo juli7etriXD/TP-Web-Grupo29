@@ -32,15 +32,23 @@ if [ -f "$archivo" ]; then
     set +a
 fi
 
+conecto=false
+
 echo "--> Esperando a que PostgreSQL esté listo..."
 for attempt in $(seq 1 60); do
     if docker compose exec -T postgres sh -c "pg_isready -U \"${POSTGRES_USER:-postgres}\" -d \"${POSTGRES_DB:-tp2_db}\"" >/dev/null 2>&1; then
         echo "PostgreSQL está listo."
+        conecto=true
         break
-    fi
+    fi #Esto es una espera activa -> No "existe" problema debido a que se duerme 1 segundo entre cada intento, y se hace un máximo de 60 intentos
     sleep 1
 done
 
-# Ejecutar tests
-echo "--> Ejecutando tests..."
-go test -v ./test/...
+if [ "$conecto" = true ]; then
+    # Ejecutar tests
+    echo "--> Ejecutando tests..."
+    go test -v ./test/...
+else
+    echo "ERROR: PostgreSQL no estuvo listo después de 60 segundos." >&2
+    exit 1
+fi
