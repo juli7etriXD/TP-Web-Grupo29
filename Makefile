@@ -7,3 +7,7 @@ test:
 
 stop:
 	docker compose down
+
+up:
+	docker compose -d up
+	go run
