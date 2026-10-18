@@ -3,6 +3,7 @@ package tests
 import (
 	"database/sql"
 	"fmt"
+	"os"
 	"testing"
 
 	db "servidor-go/db/sqlc"
@@ -11,12 +12,21 @@ import (
 )
 
 func setupTestDB(t *testing.T) (*sql.DB, *db.Queries) {
-	user := "user"
-	pass := "pass"
-	dbName := "database"
-	port := "5432"
+	getEnv := func(key, defaultValue string) string {
+		if value := os.Getenv(key); value != "" {
+			return value
+		}
+		return defaultValue
+	}
 
-	connStr := fmt.Sprintf("postgres://%s:%s@localhost:%s/%s?sslmode=disable", user, pass, port, dbName)
+	connStr := fmt.Sprintf(
+		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
+		getEnv("DB_USER", "postgres"),
+		getEnv("DB_PASSWORD", "contrasenia"),
+		getEnv("DB_HOST", "localhost"),
+		getEnv("DB_PORT", "5432"),
+		getEnv("DB_NAME", "biblioteca"),
+	)
 
 	dbConn, err := sql.Open("postgres", connStr)
 

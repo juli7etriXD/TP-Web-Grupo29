@@ -1,36 +1,41 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
+	"servidor-go/api"
+	db "servidor-go/db/sqlc"
 )
 
 // RegisterRoutes inicializa todos los handlers y registra los endpoints en el mux
 func RegisterRoutes(mux *http.ServeMux, queries *db.Queries) {
-    bookHandler := api.NewBookHandler(queries)
-    userHandler := api.NewUserHandler(queries)
-    usuarioLibroHandler := api.NewUsuarioLibroHandler(queries)
+	bookHandler := api.NewBookHandler(queries)
+	userHandler := api.NewUserHandler(queries)
+	usuarioLibroHandler := api.NewUsuarioLibroHandler(queries)
 
-    mux.HandleFunc("GET /libros", bookHandler.GetAll)
-    mux.HandleFunc("GET /libros/{id}", bookHandler.GetByID)
-    mux.HandleFunc("POST /libros", bookHandler.Create)
-    mux.HandleFunc("PUT /libros/{id}", bookHandler.Update)
-    mux.HandleFunc("DELETE /libros/{id}", bookHandler.Delete)
+	mux.HandleFunc("GET /libros", bookHandler.GetAll)
+	mux.HandleFunc("GET /libros/{id}", bookHandler.GetByID)
+	mux.HandleFunc("POST /libros", bookHandler.Create)
+	mux.HandleFunc("PUT /libros/{id}", bookHandler.Update)
+	mux.HandleFunc("DELETE /libros/{id}", bookHandler.Delete)
 
-    mux.HandleFunc("GET /usuarios", userHandler.GetAll)
-    mux.HandleFunc("GET /usuarios/{id}", userHandler.GetByID)
-    mux.HandleFunc("POST /usuarios", userHandler.Create)
-    mux.HandleFunc("PUT /usuarios/{id}", userHandler.Update)
-    mux.HandleFunc("DELETE /usuarios/{id}", userHandler.Delete)
+	mux.HandleFunc("GET /usuarios", userHandler.GetAll)
+	mux.HandleFunc("GET /usuarios/{id}", userHandler.GetByID)
+	mux.HandleFunc("POST /usuarios", userHandler.Create)
+	mux.HandleFunc("PUT /usuarios/{id}", userHandler.Update)
+	mux.HandleFunc("DELETE /usuarios/{id}", userHandler.Delete)
 
-    mux.HandleFunc("POST /usuarios/{usuario_id}/libros", usuarioLibroHandler.Create)
-    mux.HandleFunc("GET /usuarios/{usuario_id}/libros/leidos", usuarioLibroHandler.GetLibrosLeidosPorUsuario)
-    mux.HandleFunc("GET /libros/{libro_id}/usuarios", usuarioLibroHandler.GetUsuariosPorLibro)
-    mux.HandleFunc("PATCH /usuarios/{usuario_id}/libros/{libro_id}", usuarioLibroHandler.UpdateEstado)
-    mux.HandleFunc("DELETE /usuarios/{usuario_id}/libros/{libro_id}", usuarioLibroHandler.Delete)
+	mux.HandleFunc("POST /usuarios/{usuario_id}/libros", usuarioLibroHandler.Create)
+	mux.HandleFunc("GET /usuarios/{usuario_id}/libros/leidos", usuarioLibroHandler.GetLibrosLeidosPorUsuario)
+	mux.HandleFunc("GET /libros/{libro_id}/usuarios", usuarioLibroHandler.GetUsuariosPorLibro)
+	mux.HandleFunc("PATCH /usuarios/{usuario_id}/libros/{libro_id}", usuarioLibroHandler.UpdateEstado)
+	mux.HandleFunc("DELETE /usuarios/{usuario_id}/libros/{libro_id}", usuarioLibroHandler.Delete)
 
-    fileServer := http.FileServer(http.Dir("./static"))
-    mux.Handle("/", fileServer)
+	fileServer := http.FileServer(http.Dir("./static"))
+	mux.Handle("/", fileServer)
 }
 
 // Función auxiliar para leer variables con valor por defecto
