@@ -36,7 +36,7 @@ func TestLibro_CRUD(t *testing.T) {
 	}
 
 	// 3. Eliminar Libro
-	err = queries.DeleteLibro(ctx, libro.ID)
+	_, err = queries.DeleteLibro(ctx, libro.ID)
 	if err != nil {
 		t.Fatalf("Error al eliminar libro: %v", err)
 	}

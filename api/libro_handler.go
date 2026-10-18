@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"strconv"
+	"strings"
 	"time"
 
 	db "servidor-go/db/sqlc"
@@ -37,6 +37,9 @@ func (h *BookHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]string{"error": "Error al obtener libros"})
 		return
 	}
+	if libros == nil {
+		libros = []db.Libro{}
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
@@ -45,15 +48,15 @@ func (h *BookHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 
 // GET /libros/{id} - Obtener un libro por ID
 func (h *BookHandler) GetByID(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
-	if err != nil {
+	id, ok := idPositivo(r.PathValue("id"))
+	if !ok {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{"error": "ID inválido"})
 		return
 	}
 
-	libro, err := h.queries.GetLibroByID(r.Context(), int32(id))
+	libro, err := h.queries.GetLibroByID(r.Context(), id)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		if errors.Is(err, sql.ErrNoRows) {
@@ -78,6 +81,10 @@ func (h *BookHandler) Create(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{"error": "Cuerpo de solicitud inválido"})
+		return
+	}
+	if strings.TrimSpace(req.Titulo) == "" || strings.TrimSpace(req.Autor) == "" || strings.TrimSpace(req.Genero) == "" {
+		responderError(w, http.StatusBadRequest, "Título, autor y género son obligatorios")
 		return
 	}
 
@@ -111,8 +118,8 @@ func (h *BookHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 // PUT /libros/{id} - Actualizar un libro existente
 func (h *BookHandler) Update(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
-	if err != nil {
+	id, ok := idPositivo(r.PathValue("id"))
+	if !ok {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{"error": "ID inválido"})
@@ -126,6 +133,10 @@ func (h *BookHandler) Update(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]string{"error": "Cuerpo de solicitud inválido"})
 		return
 	}
+	if strings.TrimSpace(req.Titulo) == "" || strings.TrimSpace(req.Autor) == "" || strings.TrimSpace(req.Genero) == "" {
+		responderError(w, http.StatusBadRequest, "Título, autor y género son obligatorios")
+		return
+	}
 
 	fecha, err := time.Parse("2006-01-02", req.FechaPublicacion)
 	if err != nil {
@@ -136,18 +147,22 @@ func (h *BookHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params := db.UpdateLibroParams{
-		ID:               int32(id),
+		ID:               id,
 		Titulo:           req.Titulo,
 		Autor:            req.Autor,
 		FechaPublicacion: fecha,
 		Genero:           req.Genero,
 	}
 
-	err = h.queries.UpdateLibro(r.Context(), params)
+	rows, err := h.queries.UpdateLibro(r.Context(), params)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{"error": "Error al actualizar libro"})
+		return
+	}
+	if rows == 0 {
+		responderError(w, http.StatusNotFound, "Libro no encontrado")
 		return
 	}
 
@@ -159,19 +174,23 @@ func (h *BookHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 // DELETE /libros/{id} - Eliminar un libro
 func (h *BookHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
-	if err != nil {
+	id, ok := idPositivo(r.PathValue("id"))
+	if !ok {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{"error": "ID inválido"})
 		return
 	}
 
-	err = h.queries.DeleteLibro(r.Context(), int32(id))
+	rows, err := h.queries.DeleteLibro(r.Context(), id)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{"error": "Error al eliminar libro"})
+		return
+	}
+	if rows == 0 {
+		responderError(w, http.StatusNotFound, "Libro no encontrado")
 		return
 	}
 

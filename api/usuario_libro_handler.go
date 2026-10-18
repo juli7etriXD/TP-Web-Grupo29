@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
-	"time"
 
 	db "servidor-go/db/sqlc"
 )
@@ -106,24 +105,9 @@ func (h *UsuarioLibroHandler) GetUsuariosPorLibro(w http.ResponseWriter, r *http
 		return
 	}
 
-	// No devolver la contraseña que incluye el modelo completo de usuario.
-	type usuarioResponse struct {
-		ID              int32     `json:"id"`
-		Nombre          string    `json:"nombre"`
-		Apellido        string    `json:"apellido"`
-		Email           string    `json:"email"`
-		FechaNacimiento time.Time `json:"fecha_nacimiento"`
-	}
-
 	resultado := make([]usuarioResponse, 0, len(usuarios))
 	for _, usuario := range usuarios {
-		resultado = append(resultado, usuarioResponse{
-			ID:              usuario.ID,
-			Nombre:          usuario.Nombre,
-			Apellido:        usuario.Apellido,
-			Email:           usuario.Email,
-			FechaNacimiento: usuario.FechaNacimiento,
-		})
+		resultado = append(resultado, toUsuarioResponse(usuario))
 	}
 
 	responderJSON(w, http.StatusOK, resultado)
@@ -149,13 +133,17 @@ func (h *UsuarioLibroHandler) UpdateEstado(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	err := h.queries.UpdateEstadoUsuarioLibro(r.Context(), db.UpdateEstadoUsuarioLibroParams{
+	rows, err := h.queries.UpdateEstadoUsuarioLibro(r.Context(), db.UpdateEstadoUsuarioLibroParams{
 		Leido:     req.Leido,
 		UsuarioID: usuarioID,
 		LibroID:   libroID,
 	})
 	if err != nil {
 		responderError(w, http.StatusInternalServerError, "Error al actualizar el estado de lectura")
+		return
+	}
+	if rows == 0 {
+		responderError(w, http.StatusNotFound, "Relación usuario-libro no encontrada")
 		return
 	}
 
@@ -177,12 +165,16 @@ func (h *UsuarioLibroHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.queries.DeleteUsuarioLibro(r.Context(), db.DeleteUsuarioLibroParams{
+	rows, err := h.queries.DeleteUsuarioLibro(r.Context(), db.DeleteUsuarioLibroParams{
 		UsuarioID: usuarioID,
 		LibroID:   libroID,
 	})
 	if err != nil {
 		responderError(w, http.StatusInternalServerError, "Error al quitar el libro del usuario")
+		return
+	}
+	if rows == 0 {
+		responderError(w, http.StatusNotFound, "Relación usuario-libro no encontrada")
 		return
 	}
 

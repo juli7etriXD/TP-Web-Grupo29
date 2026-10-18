@@ -40,32 +40,32 @@ WHERE ul.libro_id = $1 AND ul.leido = true;
 
 -- Update
 
--- name: UpdateUser :exec
+-- name: UpdateUser :execrows
 UPDATE usuario
 SET nombre = $1, apellido = $2, email = $3, password = $4
 WHERE id = $5;
 
--- name: UpdateLibro :exec
+-- name: UpdateLibro :execrows
 UPDATE libro
 SET titulo = $1, autor = $2, fecha_publicacion = $3, genero = $4
 WHERE id = $5;
 
--- name: UpdateEstadoUsuarioLibro :exec
+-- name: UpdateEstadoUsuarioLibro :execrows
 UPDATE usuario_libro
 SET leido = $1, fecha_lectura = CURRENT_TIMESTAMP
 WHERE usuario_id = $2 AND libro_id = $3;
 
 -- Delete
 
--- name: DeleteUser :exec
+-- name: DeleteUser :execrows
 DELETE FROM usuario
 WHERE id = $1;
 
--- name: DeleteLibro :exec
+-- name: DeleteLibro :execrows
 DELETE FROM libro
 WHERE id = $1;
 
--- name: DeleteUsuarioLibro :exec
+-- name: DeleteUsuarioLibro :execrows
 DELETE FROM usuario_libro
 WHERE usuario_id = $1 AND libro_id = $2;
 

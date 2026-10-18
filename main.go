@@ -8,6 +8,8 @@ import (
 	"os"
 	"servidor-go/api"
 	db "servidor-go/db/sqlc"
+
+	_ "github.com/lib/pq"
 )
 
 // RegisterRoutes inicializa todos los handlers y registra los endpoints en el mux
@@ -47,6 +49,12 @@ func getEnv(key, defaultValue string) string {
 }
 
 func main() {
+	if err := run(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func run() error {
 	// 1. Leer variables individuales
 	user := getEnv("DB_USER", "postgres")
 	password := getEnv("DB_PASSWORD", "contrasenia")
@@ -60,13 +68,21 @@ func main() {
 	// 3. Conectar a PostgreSQL
 	conn, err := sql.Open("postgres", dsn)
 	if err != nil {
-		log.Fatalf("Error en sql.Open: %v", err)
+		return fmt.Errorf("error en sql.Open: %w", err)
 	}
 	defer conn.Close()
 
 	if err := conn.Ping(); err != nil {
-		log.Fatalf("Error al conectar con la BD: %v", err)
+		return fmt.Errorf("error al conectar con la BD: %w", err)
 	}
 
-	fmt.Println("¡Conexión a la base de datos exitosa!")
+	queries := db.New(conn)
+	mux := http.NewServeMux()
+	RegisterRoutes(mux, queries)
+
+	log.Println("Conexión a la base de datos exitosa; servidor escuchando en :8080")
+	if err := http.ListenAndServe(":8080", mux); err != nil {
+		return fmt.Errorf("error al iniciar el servidor HTTP: %w", err)
+	}
+	return nil
 }

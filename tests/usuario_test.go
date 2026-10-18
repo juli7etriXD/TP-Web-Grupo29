@@ -36,7 +36,7 @@ func TestUsuario_CRUD(t *testing.T) {
 	}
 
 	// 3. Eliminar Usuario
-	err = queries.DeleteUser(ctx, user.ID)
+	_, err = queries.DeleteUser(ctx, user.ID)
 	if err != nil {
 		t.Fatalf("Error al eliminar usuario: %v", err)
 	}

@@ -49,7 +49,7 @@ func TestUsuarioLibro_Relacion(t *testing.T) {
 	}
 
 	// 3. Actualizar Estado a Leído
-	err = queries.UpdateEstadoUsuarioLibro(ctx, db.UpdateEstadoUsuarioLibroParams{
+	_, err = queries.UpdateEstadoUsuarioLibro(ctx, db.UpdateEstadoUsuarioLibroParams{
 		Leido:     true,
 		UsuarioID: user.ID,
 		LibroID:   libro.ID,

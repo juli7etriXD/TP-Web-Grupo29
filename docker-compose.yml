@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:15
-    container_name: tp2-db
+    container_name: LibraryDB
     environment:
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-contrasenia}
@@ -10,7 +10,26 @@ services:
       - "${DB_PORT:-5432}:5432"
     volumes:
       - ./db/schema/schema.sql:/docker-entrypoint-initdb.d/init.sql #entry point para inicializar la base de datos con el script schema.sql
-      - pgdata:/var/lib/postgresql/data 
+      - pgdata:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+    environment:
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-contrasenia}
+      DB_HOST: postgres
+      DB_PORT: ${DB_PORT:-5432}
+      DB_NAME: ${DB_NAME:-biblioteca}
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: sh -c "sqlc generate && go run ."
 
 volumes:
   pgdata:

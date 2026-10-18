@@ -1,6 +1,21 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
+if [[ ! -f .env ]]; then
+    if [[ ! -f .env.example ]]; then
+        echo "ERROR: no existe .env.example para crear .env." >&2
+        exit 1
+    fi
+    cp .env.example .env
+    echo "--> Se creó .env desde .env.example."
+fi
+
+set -a
+source .env
+set +a
+
 # Limpieza automática de contenedores y volúmenes al salir (éxito, error o Ctrl+C)
 trap 'docker compose down --volumes --remove-orphans' EXIT
 
@@ -21,7 +36,7 @@ conecto=false
 
 echo "--> Esperando a que PostgreSQL esté listo..."
 for attempt in $(seq 1 60); do
-    if docker compose exec -T postgres sh -c "pg_isready -U \"${POSTGRES_USER:-postgres}\" -d \"${POSTGRES_DB:-tp2_db}\"" >/dev/null 2>&1; then
+    if docker compose exec -T postgres sh -c "pg_isready -U \"${DB_USER:-postgres}\" -d \"${DB_NAME:-biblioteca}\"" >/dev/null 2>&1; then
         echo "PostgreSQL está listo."
         conecto=true
         break
