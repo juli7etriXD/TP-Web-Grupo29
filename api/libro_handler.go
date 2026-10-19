@@ -32,67 +32,63 @@ type BookRequest struct {
 func (h *BookHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	libros, err := h.queries.GetAllLibros(r.Context())
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"error": "Error al obtener libros"})
+		responderError(w, http.StatusInternalServerError, "Error al obtener libros")
 		return
 	}
 	if libros == nil {
 		libros = []db.Libro{}
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(libros)
+	responderJSON(w, http.StatusOK, libros)
 }
 
 // GET /libros/{id} - Obtener un libro por ID
 func (h *BookHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	id, ok := idPositivo(r.PathValue("id"))
 	if !ok {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": "ID inválido"})
+		responderError(w, http.StatusBadRequest, "ID inválido")
 		return
 	}
 
 	libro, err := h.queries.GetLibroByID(r.Context(), id)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
 		if errors.Is(err, sql.ErrNoRows) {
-			w.WriteHeader(http.StatusNotFound)
-			json.NewEncoder(w).Encode(map[string]string{"error": "Libro no encontrado"})
+			responderError(w, http.StatusNotFound, "Libro no encontrado")
 			return
 		}
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"error": "Error interno del servidor"})
+		responderError(w, http.StatusInternalServerError, "Error interno del servidor")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(libro)
+	responderJSON(w, http.StatusOK, libro)
 }
 
 // POST /libros - Crear un libro nuevo
 func (h *BookHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req BookRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": "Cuerpo de solicitud inválido"})
+		responderError(w, http.StatusBadRequest, "Cuerpo de solicitud inválido")
 		return
 	}
-	if strings.TrimSpace(req.Titulo) == "" || strings.TrimSpace(req.Autor) == "" || strings.TrimSpace(req.Genero) == "" {
+
+	req.Titulo = strings.TrimSpace(req.Titulo)
+	req.Autor = strings.TrimSpace(req.Autor)
+	req.Genero = strings.TrimSpace(req.Genero)
+
+	if req.Titulo == "" || req.Autor == "" || req.Genero == "" {
 		responderError(w, http.StatusBadRequest, "Título, autor y género son obligatorios")
 		return
 	}
 
 	fecha, err := time.Parse("2006-01-02", req.FechaPublicacion)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": "Formato de fecha inválido, use YYYY-MM-DD"})
+		responderError(w, http.StatusBadRequest, "Formato de fecha inválido, use YYYY-MM-DD")
+		return
+	}
+
+	// Regla de negocio (Punto 3)
+	if esFechaFutura(fecha) {
+		responderError(w, http.StatusBadRequest, "La fecha de publicación no puede ser futura")
 		return
 	}
 
@@ -105,44 +101,44 @@ func (h *BookHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	nuevoLibro, err := h.queries.CreateLibro(r.Context(), params)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"error": "Error al crear libro"})
+		responderError(w, http.StatusInternalServerError, "Error al crear libro")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(nuevoLibro)
+	responderJSON(w, http.StatusCreated, nuevoLibro)
 }
 
 // PUT /libros/{id} - Actualizar un libro existente
 func (h *BookHandler) Update(w http.ResponseWriter, r *http.Request) {
 	id, ok := idPositivo(r.PathValue("id"))
 	if !ok {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": "ID inválido"})
+		responderError(w, http.StatusBadRequest, "ID inválido")
 		return
 	}
 
 	var req BookRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": "Cuerpo de solicitud inválido"})
+		responderError(w, http.StatusBadRequest, "Cuerpo de solicitud inválido")
 		return
 	}
-	if strings.TrimSpace(req.Titulo) == "" || strings.TrimSpace(req.Autor) == "" || strings.TrimSpace(req.Genero) == "" {
+
+	req.Titulo = strings.TrimSpace(req.Titulo)
+	req.Autor = strings.TrimSpace(req.Autor)
+	req.Genero = strings.TrimSpace(req.Genero)
+
+	if req.Titulo == "" || req.Autor == "" || req.Genero == "" {
 		responderError(w, http.StatusBadRequest, "Título, autor y género son obligatorios")
 		return
 	}
 
 	fecha, err := time.Parse("2006-01-02", req.FechaPublicacion)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": "Formato de fecha inválido, use YYYY-MM-DD"})
+		responderError(w, http.StatusBadRequest, "Formato de fecha inválido, use YYYY-MM-DD")
+		return
+	}
+
+	if esFechaFutura(fecha) {
+		responderError(w, http.StatusBadRequest, "La fecha de publicación no puede ser futura")
 		return
 	}
 
@@ -156,9 +152,7 @@ func (h *BookHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.queries.UpdateLibro(r.Context(), params)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"error": "Error al actualizar libro"})
+		responderError(w, http.StatusInternalServerError, "Error al actualizar libro")
 		return
 	}
 	if rows == 0 {
@@ -166,27 +160,20 @@ func (h *BookHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Retornamos el libro actualizado o mensaje de éxito
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"mensaje": "Libro actualizado correctamente"})
+	responderJSON(w, http.StatusOK, map[string]string{"mensaje": "Libro actualizado correctamente"})
 }
 
 // DELETE /libros/{id} - Eliminar un libro
 func (h *BookHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id, ok := idPositivo(r.PathValue("id"))
 	if !ok {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": "ID inválido"})
+		responderError(w, http.StatusBadRequest, "ID inválido")
 		return
 	}
 
 	rows, err := h.queries.DeleteLibro(r.Context(), id)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"error": "Error al eliminar libro"})
+		responderError(w, http.StatusInternalServerError, "Error al eliminar libro")
 		return
 	}
 	if rows == 0 {

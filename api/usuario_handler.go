@@ -59,9 +59,7 @@ func toUsuarioResponse(usuario db.Usuario) usuarioResponse {
 func (h *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	usuarios, err := h.queries.GetAllUsuarios(r.Context())
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"error": "Error al obtener usuarios"})
+		responderError(w, http.StatusInternalServerError, "Error al obtener usuarios")
 		return
 	}
 	resultado := make([]usuarioResponse, 0, len(usuarios))
@@ -69,58 +67,70 @@ func (h *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		resultado = append(resultado, toUsuarioResponse(usuario))
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(resultado)
+	responderJSON(w, http.StatusOK, resultado)
 }
 
 // GET /usuarios/{id} - Obtener un usuario por ID
 func (h *UserHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	id, ok := idPositivo(r.PathValue("id"))
 	if !ok {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": "ID inválido"})
+		responderError(w, http.StatusBadRequest, "ID inválido")
 		return
 	}
 
 	usuario, err := h.queries.GetUserByID(r.Context(), id)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
 		if errors.Is(err, sql.ErrNoRows) {
-			w.WriteHeader(http.StatusNotFound)
-			json.NewEncoder(w).Encode(map[string]string{"error": "Usuario no encontrado"})
+			responderError(w, http.StatusNotFound, "Usuario no encontrado")
 			return
 		}
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"error": "Error interno del servidor"})
+		responderError(w, http.StatusInternalServerError, "Error interno del servidor")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(toUsuarioResponse(usuario))
+	responderJSON(w, http.StatusOK, toUsuarioResponse(usuario))
 }
 
 // POST /usuarios - Crear un nuevo usuario
 func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req UserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": "Cuerpo de solicitud inválido"})
+		responderError(w, http.StatusBadRequest, "Cuerpo de solicitud inválido")
 		return
 	}
-	if strings.TrimSpace(req.Nombre) == "" || strings.TrimSpace(req.Apellido) == "" || strings.TrimSpace(req.Email) == "" || strings.TrimSpace(req.Password) == "" {
+
+	req.Nombre = strings.TrimSpace(req.Nombre)
+	req.Apellido = strings.TrimSpace(req.Apellido)
+	req.Email = strings.TrimSpace(req.Email)
+	req.Password = strings.TrimSpace(req.Password)
+
+	if req.Nombre == "" || req.Apellido == "" || req.Email == "" || req.Password == "" {
 		responderError(w, http.StatusBadRequest, "Nombre, apellido, email y contraseña son obligatorios")
 		return
 	}
 
-	fecha, err := time.Parse("2006-01-02", req.FechaNacimiento) // validacion del formato
+	// Reglas de negocio (Punto 3)
+	if !esEmailValido(req.Email) {
+		responderError(w, http.StatusBadRequest, "Formato de email inválido")
+		return
+	}
+
+	if len(req.Password) < 6 {
+		responderError(w, http.StatusBadRequest, "La contraseña debe tener al menos 6 caracteres")
+		return
+	}
+
+	fecha, err := time.Parse("2006-01-02", req.FechaNacimiento)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": "Formato de fecha inválido, use YYYY-MM-DD"})
+		responderError(w, http.StatusBadRequest, "Formato de fecha inválido, use YYYY-MM-DD")
+		return
+	}
+	if esFechaFutura(fecha) {
+		responderError(w, http.StatusBadRequest, "La fecha de nacimiento no puede ser futura")
+		return
+	}
+	if fecha.Year() < 1900 {
+		responderError(w, http.StatusBadRequest, "La fecha de nacimiento es inválida (año anterior a 1900)")
 		return
 	}
 
@@ -134,36 +144,49 @@ func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	nuevoUsuario, err := h.queries.CreateUser(r.Context(), params)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"error": "Error al crear usuario (verifique si el email ya existe)"})
+		// Código HTTP 409 Conflict si el email ya existe (Punto 2)
+		if esErrorDuplicado(err) {
+			responderError(w, http.StatusConflict, "El email ya se encuentra registrado")
+			return
+		}
+		responderError(w, http.StatusInternalServerError, "Error al crear usuario")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(toUsuarioResponse(nuevoUsuario))
+	responderJSON(w, http.StatusCreated, toUsuarioResponse(nuevoUsuario))
 }
 
 // PUT /usuarios/{id} - Actualizar un usuario existente
 func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 	id, ok := idPositivo(r.PathValue("id"))
 	if !ok {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": "ID inválido"})
+		responderError(w, http.StatusBadRequest, "ID inválido")
 		return
 	}
 
 	var req UpdateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": "Cuerpo de solicitud inválido"})
+		responderError(w, http.StatusBadRequest, "Cuerpo de solicitud inválido")
 		return
 	}
-	if strings.TrimSpace(req.Nombre) == "" || strings.TrimSpace(req.Apellido) == "" || strings.TrimSpace(req.Email) == "" || strings.TrimSpace(req.Password) == "" {
+
+	req.Nombre = strings.TrimSpace(req.Nombre)
+	req.Apellido = strings.TrimSpace(req.Apellido)
+	req.Email = strings.TrimSpace(req.Email)
+	req.Password = strings.TrimSpace(req.Password)
+
+	if req.Nombre == "" || req.Apellido == "" || req.Email == "" || req.Password == "" {
 		responderError(w, http.StatusBadRequest, "Nombre, apellido, email y contraseña son obligatorios")
+		return
+	}
+
+	if !esEmailValido(req.Email) {
+		responderError(w, http.StatusBadRequest, "Formato de email inválido")
+		return
+	}
+
+	if len(req.Password) < 6 {
+		responderError(w, http.StatusBadRequest, "La contraseña debe tener al menos 6 caracteres")
 		return
 	}
 
@@ -177,9 +200,11 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.queries.UpdateUser(r.Context(), params)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"error": "Error al actualizar usuario"})
+		if esErrorDuplicado(err) {
+			responderError(w, http.StatusConflict, "El email ya se encuentra registrado por otro usuario")
+			return
+		}
+		responderError(w, http.StatusInternalServerError, "Error al actualizar usuario")
 		return
 	}
 	if rows == 0 {
@@ -187,26 +212,20 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"mensaje": "Usuario actualizado correctamente"})
+	responderJSON(w, http.StatusOK, map[string]string{"mensaje": "Usuario actualizado correctamente"})
 }
 
 // DELETE /usuarios/{id} - Eliminar un usuario
 func (h *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id, ok := idPositivo(r.PathValue("id"))
 	if !ok {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": "ID inválido"})
+		responderError(w, http.StatusBadRequest, "ID inválido")
 		return
 	}
 
 	rows, err := h.queries.DeleteUser(r.Context(), id)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"error": "Error al eliminar usuario"})
+		responderError(w, http.StatusInternalServerError, "Error al eliminar usuario")
 		return
 	}
 	if rows == 0 {

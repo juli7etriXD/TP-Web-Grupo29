@@ -32,6 +32,19 @@ usuario_id: jsonpath "$.id"
 [Asserts]
 jsonpath "$.email" == "{{email}}"
 
+POST http://localhost:8080/usuarios
+Content-Type: application/json
+{
+	"nombre": "Ana Copia",
+	"apellido": "Pérez",
+	"email": "{{email}}",
+	"password": "clave123",
+	"fecha_nacimiento": "1998-04-15"
+}
+HTTP/1.1 409
+[Asserts]
+jsonpath "$.error" == "El email ya se encuentra registrado"
+
 GET http://localhost:8080/libros
 HTTP/1.1 200
 
@@ -93,6 +106,26 @@ HTTP/1.1 201
 [Asserts]
 jsonpath "$.leido" == false
 
+POST http://localhost:8080/usuarios/{{usuario_id}}/libros
+Content-Type: application/json
+{
+	"libro_id": {{libro_id}},
+	"leido": false
+}
+HTTP/1.1 409
+[Asserts]
+jsonpath "$.error" == "El libro ya está asociado al usuario"
+
+POST http://localhost:8080/usuarios/2147483647/libros
+Content-Type: application/json
+{
+	"libro_id": {{libro_id}},
+	"leido": false
+}
+HTTP/1.1 404
+[Asserts]
+jsonpath "$.error" == "El usuario o el libro especificado no existe"
+
 PATCH http://localhost:8080/usuarios/{{usuario_id}}/libros/{{libro_id}}
 Content-Type: application/json
 {
@@ -139,3 +172,38 @@ HTTP/1.1 404
 
 GET http://localhost:8080/usuarios/{{usuario_id}}
 HTTP/1.1 404
+
+GET http://localhost:8080/usuarios/{{usuario_id}}/libros/leidos
+HTTP/1.1 404
+[Asserts]
+jsonpath "$.error" == "Usuario no encontrado"
+
+GET http://localhost:8080/libros/{{libro_id}}/usuarios
+HTTP/1.1 404
+[Asserts]
+jsonpath "$.error" == "Libro no encontrado"
+
+POST http://localhost:8080/usuarios
+Content-Type: application/json
+{
+	"nombre": "Carlos",
+	"apellido": "Gómez",
+	"email": "correo-invalido",
+	"password": "clave123",
+	"fecha_nacimiento": "1995-05-10"
+}
+HTTP/1.1 400
+[Asserts]
+jsonpath "$.error" == "Formato de email inválido"
+
+POST http://localhost:8080/libros
+Content-Type: application/json
+{
+	"titulo": "Libro del Futuro",
+	"autor": "Autor Futuro",
+	"fecha_publicacion": "2099-01-01",
+	"genero": "Ciencia Ficción"
+}
+HTTP/1.1 400
+[Asserts]
+jsonpath "$.error" == "La fecha de publicación no puede ser futura"

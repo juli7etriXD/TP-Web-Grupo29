@@ -66,6 +66,13 @@ docker compose logs -f app
 
 Las fechas se envían como `YYYY-MM-DD`. Las solicitudes con cuerpo deben incluir `Content-Type: application/json`. Los IDs de las rutas son enteros positivos. Las respuestas de error son JSON con la propiedad `error`.
 
+### Validaciones y reglas de negocio:
+- Las fechas (`fecha_nacimiento`, `fecha_publicacion`) no pueden ser futuras y deben respetar el formato `YYYY-MM-DD`. La fecha de nacimiento no puede ser anterior al año 1900.
+- El `email` debe poseer un formato sintáctico válido.
+- La `password` debe contener al menos 6 caracteres.
+- Conflictos de unicidad (como registrar un email ya existente o asociar un libro ya vinculado) devuelven `409 Conflict`.
+- Consultas o asociaciones sobre entidades no encontradas devuelven `404 Not Found`.
+
 | Método y ruta | Descripción | JSON de entrada | Respuestas principales |
 | --- | --- | --- | --- |
 | `GET /libros` | Listar libros | — | `200` |
@@ -75,12 +82,12 @@ Las fechas se envían como `YYYY-MM-DD`. Las solicitudes con cuerpo deben inclui
 | `DELETE /libros/{id}` | Eliminar libro | — | `204`, `400`, `404` |
 | `GET /usuarios` | Listar usuarios | — | `200` |
 | `GET /usuarios/{id}` | Obtener un usuario | — | `200`, `400`, `404` |
-| `POST /usuarios` | Crear usuario | `{"nombre":"Ana","apellido":"Pérez","email":"ana@example.com","password":"clave123","fecha_nacimiento":"1998-04-15"}` | `201`, `400` |
-| `PUT /usuarios/{id}` | Actualizar usuario | `{"nombre":"Ana","apellido":"Pérez","email":"ana@example.com","password":"clave456"}` | `200`, `400`, `404` |
+| `POST /usuarios` | Crear usuario | `{"nombre":"Ana","apellido":"Pérez","email":"ana@example.com","password":"clave123","fecha_nacimiento":"1998-04-15"}` | `201`, `400`, `409` |
+| `PUT /usuarios/{id}` | Actualizar usuario | `{"nombre":"Ana","apellido":"Pérez","email":"ana@example.com","password":"clave456"}` | `200`, `400`, `404`, `409` |
 | `DELETE /usuarios/{id}` | Eliminar usuario | — | `204`, `400`, `404` |
-| `POST /usuarios/{usuario_id}/libros` | Asociar libro a usuario | `{"libro_id":1,"leido":false}` | `201`, `400` |
-| `GET /usuarios/{usuario_id}/libros/leidos` | Listar libros leídos por usuario | — | `200`, `400` |
-| `GET /libros/{libro_id}/usuarios` | Listar usuarios asociados a un libro | — | `200`, `400` |
+| `POST /usuarios/{usuario_id}/libros` | Asociar libro a usuario | `{"libro_id":1,"leido":false}` | `201`, `400`, `404`, `409` |
+| `GET /usuarios/{usuario_id}/libros/leidos` | Listar libros leídos por usuario | — | `200`, `400`, `404` |
+| `GET /libros/{libro_id}/usuarios` | Listar usuarios asociados a un libro | — | `200`, `400`, `404` |
 | `PATCH /usuarios/{usuario_id}/libros/{libro_id}` | Cambiar estado de lectura | `{"leido":true}` | `200`, `400`, `404` |
 | `DELETE /usuarios/{usuario_id}/libros/{libro_id}` | Quitar asociación | — | `204`, `400`, `404` |
 
@@ -115,6 +122,7 @@ Si la construcción falla con `Could not resolve host` o `lookup ... i/o timeout
 ```text
 .
 ├── api/
+│   ├── helpers.go
 │   ├── libro_handler.go
 │   ├── usuario_handler.go
 │   └── usuario_libro_handler.go

@@ -1,9 +1,10 @@
 package api
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
-	"strconv"
 
 	db "servidor-go/db/sqlc"
 )
@@ -23,24 +24,6 @@ type crearRelacionRequest struct {
 
 type actualizarEstadoRequest struct {
 	Leido bool `json:"leido"`
-}
-
-func idPositivo(value string) (int32, bool) {
-	id, err := strconv.ParseInt(value, 10, 32)
-	if err != nil || id <= 0 {
-		return 0, false
-	}
-	return int32(id), true
-}
-
-func responderJSON(w http.ResponseWriter, status int, data any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	_ = json.NewEncoder(w).Encode(data)
-}
-
-func responderError(w http.ResponseWriter, status int, mensaje string) {
-	responderJSON(w, status, map[string]string{"error": mensaje})
 }
 
 // POST /usuarios/{usuario_id}/libros
@@ -64,6 +47,14 @@ func (h *UsuarioLibroHandler) Create(w http.ResponseWriter, r *http.Request) {
 		Leido:     req.Leido,
 	})
 	if err != nil {
+		if esErrorDuplicado(err) {
+			responderError(w, http.StatusConflict, "El libro ya está asociado al usuario")
+			return
+		}
+		if esErrorClaveForanea(err) {
+			responderError(w, http.StatusNotFound, "El usuario o el libro especificado no existe")
+			return
+		}
 		responderError(w, http.StatusInternalServerError, "Error al asociar el libro al usuario")
 		return
 	}
@@ -76,6 +67,16 @@ func (h *UsuarioLibroHandler) GetLibrosLeidosPorUsuario(w http.ResponseWriter, r
 	usuarioID, ok := idPositivo(r.PathValue("usuario_id"))
 	if !ok {
 		responderError(w, http.StatusBadRequest, "ID de usuario inválido")
+		return
+	}
+
+	// Verificar si el usuario existe antes de consultar sus libros leídos
+	if _, err := h.queries.GetUserByID(r.Context(), usuarioID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			responderError(w, http.StatusNotFound, "Usuario no encontrado")
+			return
+		}
+		responderError(w, http.StatusInternalServerError, "Error al verificar existencia del usuario")
 		return
 	}
 
@@ -96,6 +97,16 @@ func (h *UsuarioLibroHandler) GetUsuariosPorLibro(w http.ResponseWriter, r *http
 	libroID, ok := idPositivo(r.PathValue("libro_id"))
 	if !ok {
 		responderError(w, http.StatusBadRequest, "ID de libro inválido")
+		return
+	}
+
+	// Verificar si el libro existe antes de consultar sus usuarios asociados
+	if _, err := h.queries.GetLibroByID(r.Context(), libroID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			responderError(w, http.StatusNotFound, "Libro no encontrado")
+			return
+		}
+		responderError(w, http.StatusInternalServerError, "Error al verificar existencia del libro")
 		return
 	}
 
