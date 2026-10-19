@@ -18,5 +18,5 @@ test-api:
 	trap 'docker compose down --volumes --remove-orphans || true' EXIT
 	docker compose down --volumes --remove-orphans || true
 	docker compose up -d --build postgres app
-	docker compose exec -T app sh -lc 'sqlc generate && go build ./... && hurl --test --variable "email=ana.$$(date +%s%N)@example.com" request.hurl && go test -v ./tests/...'
+	docker compose exec -T app sh -c 'sqlc generate && go build ./... && for i in $$(seq 1 30); do curl -s -f http://localhost:8080/libros >/dev/null && break || sleep 0.5; done && hurl --test --variable "email=ana.$$(date +%s%N)@example.com" request.hurl && go test -v ./tests/...'
 	

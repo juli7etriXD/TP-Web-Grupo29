@@ -11,13 +11,20 @@ services:
     volumes:
       - ./db/schema/schema.sql:/docker-entrypoint-initdb.d/init.sql #entry point para inicializar la base de datos con el script schema.sql
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-biblioteca}"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+      start_period: 3s
 
   app:
     build:
       context: .
       dockerfile: Dockerfile
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
       DB_USER: ${DB_USER:-postgres}
       DB_PASSWORD: ${DB_PASSWORD:-contrasenia}
