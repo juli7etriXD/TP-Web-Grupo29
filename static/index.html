@@ -1,12 +1,89 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-<title> Mi Biblioteca</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Biblioteca - Libros</title>
+    <!-- Hoja de estilos vinculada -->
+    <link rel="stylesheet" href="styles.css">
+    <!-- Script de la aplicación vinculado con defer para ejecutarse tras el parseo del DOM -->
+    <script src="app.js" defer></script>
 </head>
 <body>
-<h1> Mi Biblioteca </h1>
-<h2></h2>
-<p>En esta pagina web puedes encontrar tu lista de Libros Leidos.</p>
-<p>Podras cargar tus libros leidos, leer una breve descripcion, eliminarlos, actualizar su informacion</p>
+    <div class="contenedor-principal">
+        <!-- Título principal -->
+        <header class="encabezado">
+            <h1>Biblioteca Digital</h1>
+            <p class="subtitulo">Panel de gestión y catálogo de libros</p>
+        </header>
+
+        <main class="contenido-grid">
+            <!-- Sección: Formulario para crear nuevas entidades -->
+            <section class="seccion-formulario">
+                <h2>Registrar Nuevo Libro</h2>
+                <form id="formulario-libro" novalidate>
+                    <div class="campo-grupo">
+                        <label for="titulo">Título</label>
+                        <input 
+                            type="text" 
+                            id="titulo" 
+                            name="titulo" 
+                            placeholder="Ej: Cien años de soledad" 
+                            required
+                        >
+                    </div>
+
+                    <div class="campo-grupo">
+                        <label for="autor">Autor</label>
+                        <input 
+                            type="text" 
+                            id="autor" 
+                            name="autor" 
+                            placeholder="Ej: Gabriel García Márquez" 
+                            required
+                        >
+                    </div>
+
+                    <div class="campo-grupo">
+                        <label for="fecha_publicacion">Fecha de Publicación</label>
+                        <input 
+                            type="date" 
+                            id="fecha_publicacion" 
+                            name="fecha_publicacion" 
+                            required
+                        >
+                    </div>
+
+                    <div class="campo-grupo">
+                        <label for="genero">Género</label>
+                        <input 
+                            type="text" 
+                            id="genero" 
+                            name="genero" 
+                            placeholder="Ej: Realismo mágico" 
+                            required
+                        >
+                    </div>
+
+                    <!-- Botón de envío -->
+                    <button type="submit" id="btn-guardar" class="btn btn-primario">
+                        Agregar Libro
+                    </button>
+
+                    <!-- Mensajes de feedback (éxito o error) -->
+                    <div id="mensaje-estado" class="mensaje-estado" aria-live="polite"></div>
+                </form>
+            </section>
+
+            <!-- Sección: Contenedor donde se mostrará la lista de entidades -->
+            <section class="seccion-lista">
+                <h2>Libros Registrados</h2>
+                <!-- Contenedor con ID para manipularlo mediante JavaScript -->
+                <div id="contenedor-libros" class="contenedor-libros">
+                    <p class="mensaje-cargando">Cargando libros...</p>
+                </div>
+            </section>
+        </main>
+    </div>
 </body>
 </html>

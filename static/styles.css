@@ -1,0 +1,286 @@
+/* ==========================================================================
+   Variables y Reset Global
+   ========================================================================== */
+:root {
+    --color-primario: #3b82f6;
+    --color-primario-hover: #2563eb;
+    --color-peligro: #ef4444;
+    --color-peligro-hover: #dc2626;
+    --color-fondo: #f8fafc;
+    --color-superficie: #ffffff;
+    --color-borde: #e2e8f0;
+    --color-texto: #1e293b;
+    --color-texto-secundario: #64748b;
+    --color-exito-fondo: #dcfce7;
+    --color-exito-texto: #15803d;
+    --color-error-fondo: #fee2e2;
+    --color-error-texto: #b91c1c;
+
+    --sombra-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --sombra-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --sombra-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+    --radio-borde: 10px;
+    --transicion: all 0.2s ease-in-out;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+body {
+    background-color: var(--color-fondo);
+    color: var(--color-texto);
+    line-height: 1.5;
+    padding: 2rem 1rem;
+}
+
+/* ==========================================================================
+   Layout Principal (Contenedor y Grid)
+   ========================================================================== */
+.contenedor-principal {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.encabezado {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.encabezado h1 {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: var(--color-texto);
+    margin-bottom: 0.5rem;
+}
+
+.subtitulo {
+    color: var(--color-texto-secundario);
+    font-size: 1.1rem;
+}
+
+/* Distribución principal usando CSS Grid */
+.contenido-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+@media (min-width: 860px) {
+    .contenido-grid {
+        grid-template-columns: 360px 1fr;
+    }
+}
+
+/* ==========================================================================
+   Secciones y Paneles
+   ========================================================================== */
+.seccion-formulario,
+.seccion-lista {
+    background: var(--color-superficie);
+    padding: 1.75rem;
+    border-radius: var(--radio-borde);
+    box-shadow: var(--sombra-md);
+    border: 1px solid var(--color-borde);
+}
+
+.seccion-formulario h2,
+.seccion-lista h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--color-fondo);
+}
+
+/* ==========================================================================
+   Formulario (Flexbox)
+   ========================================================================== */
+#formulario-libro {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+}
+
+.campo-grupo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.campo-grupo label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-texto);
+}
+
+.campo-grupo input {
+    padding: 0.65rem 0.85rem;
+    border: 1.5px solid var(--color-borde);
+    border-radius: 6px;
+    font-size: 0.95rem;
+    color: var(--color-texto);
+    background-color: var(--color-superficie);
+    transition: var(--transicion);
+}
+
+.campo-grupo input:focus {
+    outline: none;
+    border-color: var(--color-primario);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+/* ==========================================================================
+   Botones
+   ========================================================================== */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.7rem 1.2rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: var(--transicion);
+}
+
+.btn-primario {
+    background-color: var(--color-primario);
+    color: #ffffff;
+}
+
+.btn-primario:hover {
+    background-color: var(--color-primario-hover);
+    box-shadow: var(--sombra-sm);
+}
+
+.btn-peligro {
+    background-color: #fee2e2;
+    color: var(--color-peligro);
+    padding: 0.45rem 0.85rem;
+    font-size: 0.85rem;
+}
+
+.btn-peligro:hover {
+    background-color: var(--color-peligro);
+    color: #ffffff;
+}
+
+/* ==========================================================================
+   Mensajes de Feedback / Estado
+   ========================================================================== */
+.mensaje-estado {
+    display: none;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.mensaje-estado.exito {
+    display: block;
+    background-color: var(--color-exito-fondo);
+    color: var(--color-exito-texto);
+}
+
+.mensaje-estado.error {
+    display: block;
+    background-color: var(--color-error-fondo);
+    color: var(--color-error-texto);
+}
+
+/* ==========================================================================
+   Lista de Entidades / Tarjetas de Libros
+   ========================================================================== */
+.contenedor-libros {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.tarjeta-libro {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: var(--color-fondo);
+    border: 1px solid var(--color-borde);
+    border-radius: 8px;
+    padding: 1.25rem;
+    transition: var(--transicion);
+}
+
+@media (min-width: 600px) {
+    .tarjeta-libro {
+        flex-direction: row;
+        align-items: center;
+        gap: 1rem;
+    }
+}
+
+.tarjeta-libro:hover {
+    border-color: #cbd5e1;
+    box-shadow: var(--sombra-sm);
+}
+
+.info-libro {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.titulo-libro {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--color-texto);
+}
+
+.autor-libro {
+    color: var(--color-texto-secundario);
+    font-size: 0.925rem;
+    font-weight: 500;
+}
+
+.detalles-libro {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    font-size: 0.825rem;
+    color: var(--color-texto-secundario);
+    margin-top: 0.25rem;
+}
+
+.badge-genero {
+    background-color: #e0f2fe;
+    color: #0369a1;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.acciones-libro {
+    display: flex;
+    align-items: center;
+    margin-top: 0.75rem;
+}
+
+@media (min-width: 600px) {
+    .acciones-libro {
+        margin-top: 0;
+    }
+}
+
+/* Estados Vacío / Cargando */
+.mensaje-cargando,
+.mensaje-vacio {
+    text-align: center;
+    padding: 2.5rem 1rem;
+    color: var(--color-texto-secundario);
+    font-size: 0.95rem;
+}
