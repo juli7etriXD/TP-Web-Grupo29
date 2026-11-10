@@ -1,286 +1,441 @@
 /* ==========================================================================
-   Variables y Reset Global
+   Biblioteca Digital - styles.css
+   Paleta: azul petróleo, crema, coral y dorado.
+   Tipografías: Playfair Display (títulos) + DM Sans (texto).
    ========================================================================== */
+
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap");
+
+/* --------------------------------------------------------------------------
+   1. Variables
+   -------------------------------------------------------------------------- */
 :root {
-    --color-primario: #3b82f6;
-    --color-primario-hover: #2563eb;
-    --color-peligro: #ef4444;
-    --color-peligro-hover: #dc2626;
-    --color-fondo: #f8fafc;
-    --color-superficie: #ffffff;
-    --color-borde: #e2e8f0;
-    --color-texto: #1e293b;
-    --color-texto-secundario: #64748b;
-    --color-exito-fondo: #dcfce7;
-    --color-exito-texto: #15803d;
-    --color-error-fondo: #fee2e2;
-    --color-error-texto: #b91c1c;
+    --petroleo: #14303f;
+    --petroleo-claro: #1d4153;
+    --petroleo-borde: #2a4e60;
+    --crema: #f5f3ee;
+    --blanco: #ffffff;
+    --tinta: #14303f;
+    --tinta-suave: #5d6e78;
+    --linea: #e2ddd2;
 
-    --sombra-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --sombra-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --sombra-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --coral: #e8674f;
+    --coral-oscuro: #d4543d;
+    --dorado: #e8a862;
 
-    --radio-borde: 10px;
-    --transicion: all 0.2s ease-in-out;
+    --libro-ocre: #a8692b;
+    --libro-marino: #14303f;
+    --libro-coral: #c65d4b;
+    --libro-salvia: #5e7a68;
+
+    --ok: #2f7d5b;
+    --error: #c0392b;
+
+    --fuente-titulo: "Playfair Display", Georgia, "Times New Roman", serif;
+    --fuente-texto: "DM Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+
+    --radio-chico: 8px;
+    --radio: 14px;
+    --radio-grande: 20px;
+
+    --sombra: 0 18px 40px -18px rgba(20, 48, 63, 0.45);
 }
 
-* {
-    margin: 0;
-    padding: 0;
+/* --------------------------------------------------------------------------
+   2. Reset y base
+   -------------------------------------------------------------------------- */
+*,
+*::before,
+*::after {
     box-sizing: border-box;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
 }
 
 body {
-    background-color: var(--color-fondo);
-    color: var(--color-texto);
-    line-height: 1.5;
-    padding: 2rem 1rem;
+    margin: 0;
+    min-height: 100vh;
+    font-family: var(--fuente-texto);
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--tinta);
+    background: var(--crema);
+    -webkit-font-smoothing: antialiased;
 }
 
-/* ==========================================================================
-   Layout Principal (Contenedor y Grid)
-   ========================================================================== */
+h1,
+h2,
+h3,
+h4 {
+    margin: 0;
+    font-family: var(--fuente-titulo);
+    font-weight: 600;
+    line-height: 1.15;
+}
+
+p {
+    margin: 0;
+}
+
+:focus-visible {
+    outline: 2px solid var(--coral);
+    outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   3. Estructura general
+   -------------------------------------------------------------------------- */
 .contenedor-principal {
-    max-width: 1200px;
+    max-width: 1180px;
     margin: 0 auto;
+    padding: 40px 32px 72px;
 }
 
+/* --------------------------------------------------------------------------
+   4. Encabezado (banner principal)
+   -------------------------------------------------------------------------- */
 .encabezado {
-    text-align: center;
-    margin-bottom: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    padding: 56px 48px;
+    margin-bottom: 56px;
+    border-radius: var(--radio-grande);
+    color: var(--blanco);
+    background:
+        radial-gradient(circle at 92% 8%, rgba(232, 168, 98, 0.22), transparent 42%),
+        radial-gradient(circle at 78% 110%, rgba(232, 103, 79, 0.18), transparent 45%),
+        linear-gradient(135deg, #132c3a 0%, var(--petroleo) 60%, #183849 100%);
+    box-shadow: var(--sombra);
+}
+
+/* Líneas concéntricas decorativas del lado derecho */
+.encabezado::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: -90px;
+    width: 340px;
+    height: 340px;
+    transform: translateY(-50%);
+    border-radius: 50%;
+    border: 1px solid rgba(232, 168, 98, 0.28);
+    box-shadow:
+        0 0 0 38px rgba(232, 168, 98, 0.05),
+        0 0 0 39px rgba(232, 168, 98, 0.22),
+        0 0 0 82px rgba(232, 168, 98, 0.03),
+        0 0 0 83px rgba(232, 168, 98, 0.16);
+    pointer-events: none;
 }
 
 .encabezado h1 {
-    font-size: 2.25rem;
-    font-weight: 800;
-    color: var(--color-texto);
-    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+    max-width: 14ch;
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    font-weight: 700;
+    letter-spacing: -0.01em;
 }
 
 .subtitulo {
-    color: var(--color-texto-secundario);
-    font-size: 1.1rem;
+    position: relative;
+    z-index: 1;
+    margin-top: 16px;
+    max-width: 46ch;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.72);
 }
 
-/* Distribución principal usando CSS Grid */
+/* --------------------------------------------------------------------------
+   5. Grid de contenido
+   -------------------------------------------------------------------------- */
 .contenido-grid {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 2rem;
+    grid-template-columns: 340px minmax(0, 1fr);
+    gap: 40px;
     align-items: start;
 }
 
-@media (min-width: 860px) {
-    .contenido-grid {
-        grid-template-columns: 360px 1fr;
-    }
+.contenido-grid h2 {
+    font-size: 1.75rem;
+    color: var(--tinta);
 }
 
-/* ==========================================================================
-   Secciones y Paneles
-   ========================================================================== */
-.seccion-formulario,
-.seccion-lista {
-    background: var(--color-superficie);
-    padding: 1.75rem;
-    border-radius: var(--radio-borde);
-    box-shadow: var(--sombra-md);
-    border: 1px solid var(--color-borde);
+/* --------------------------------------------------------------------------
+   6. Formulario
+   -------------------------------------------------------------------------- */
+.seccion-formulario {
+    position: sticky;
+    top: 24px;
+    padding: 28px 24px 26px;
+    background: var(--blanco);
+    border: 1px solid var(--linea);
+    border-radius: var(--radio);
+    box-shadow: 0 10px 30px -22px rgba(20, 48, 63, 0.5);
 }
 
-.seccion-formulario h2,
-.seccion-lista h2 {
-    font-size: 1.35rem;
-    font-weight: 700;
-    margin-bottom: 1.25rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 2px solid var(--color-fondo);
-}
-
-/* ==========================================================================
-   Formulario (Flexbox)
-   ========================================================================== */
-#formulario-libro {
-    display: flex;
-    flex-direction: column;
-    gap: 1.1rem;
+.seccion-formulario h2 {
+    margin-bottom: 22px;
 }
 
 .campo-grupo {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+    gap: 6px;
+    margin-bottom: 16px;
 }
 
 .campo-grupo label {
-    font-size: 0.875rem;
+    font-size: 0.8rem;
     font-weight: 600;
-    color: var(--color-texto);
+    color: var(--tinta-suave);
 }
 
 .campo-grupo input {
-    padding: 0.65rem 0.85rem;
-    border: 1.5px solid var(--color-borde);
-    border-radius: 6px;
-    font-size: 0.95rem;
-    color: var(--color-texto);
-    background-color: var(--color-superficie);
-    transition: var(--transicion);
+    width: 100%;
+    padding: 11px 14px;
+    font: inherit;
+    font-size: 0.9rem;
+    color: var(--tinta);
+    background: var(--crema);
+    border: 1px solid var(--linea);
+    border-radius: var(--radio-chico);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.campo-grupo input::placeholder {
+    color: #9aa6ad;
+}
+
+.campo-grupo input:hover {
+    border-color: #cfc8b9;
 }
 
 .campo-grupo input:focus {
     outline: none;
-    border-color: var(--color-primario);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    background: var(--blanco);
+    border-color: var(--petroleo);
+    box-shadow: 0 0 0 3px rgba(20, 48, 63, 0.12);
 }
 
-/* ==========================================================================
-   Botones
-   ========================================================================== */
+/* Estado de error (agregar la clase .invalido desde JS si hace falta) */
+.campo-grupo input.invalido,
+.campo-grupo input:user-invalid {
+    border-color: var(--error);
+    box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.12);
+}
+
+/* --------------------------------------------------------------------------
+   7. Botones
+   -------------------------------------------------------------------------- */
 .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.7rem 1.2rem;
-    font-size: 0.95rem;
+    gap: 8px;
+    padding: 12px 22px;
+    font: inherit;
+    font-size: 0.9rem;
     font-weight: 600;
-    border-radius: 6px;
-    border: none;
     cursor: pointer;
-    transition: var(--transicion);
+    border: 0;
+    border-radius: var(--radio-chico);
+    transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
 }
 
 .btn-primario {
-    background-color: var(--color-primario);
-    color: #ffffff;
+    width: 100%;
+    margin-top: 6px;
+    color: var(--blanco);
+    background: var(--coral);
+    box-shadow: 0 8px 18px -10px var(--coral);
 }
 
 .btn-primario:hover {
-    background-color: var(--color-primario-hover);
-    box-shadow: var(--sombra-sm);
+    background: var(--coral-oscuro);
 }
 
-.btn-peligro {
-    background-color: #fee2e2;
-    color: var(--color-peligro);
-    padding: 0.45rem 0.85rem;
-    font-size: 0.85rem;
+.btn-primario:active {
+    transform: translateY(1px);
 }
 
-.btn-peligro:hover {
-    background-color: var(--color-peligro);
-    color: #ffffff;
+.btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
 }
 
-/* ==========================================================================
-   Mensajes de Feedback / Estado
-   ========================================================================== */
+/* --------------------------------------------------------------------------
+   8. Mensajes de estado
+   -------------------------------------------------------------------------- */
 .mensaje-estado {
-    display: none;
-    padding: 0.75rem 1rem;
-    border-radius: 6px;
-    font-size: 0.9rem;
+    margin-top: 14px;
+    font-size: 0.85rem;
     font-weight: 500;
+    min-height: 1.2em;
 }
 
 .mensaje-estado.exito {
-    display: block;
-    background-color: var(--color-exito-fondo);
-    color: var(--color-exito-texto);
+    color: var(--ok);
 }
 
 .mensaje-estado.error {
-    display: block;
-    background-color: var(--color-error-fondo);
-    color: var(--color-error-texto);
+    color: var(--error);
 }
 
-/* ==========================================================================
-   Lista de Entidades / Tarjetas de Libros
-   ========================================================================== */
-.contenedor-libros {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.tarjeta-libro {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    background-color: var(--color-fondo);
-    border: 1px solid var(--color-borde);
-    border-radius: 8px;
-    padding: 1.25rem;
-    transition: var(--transicion);
-}
-
-@media (min-width: 600px) {
-    .tarjeta-libro {
-        flex-direction: row;
-        align-items: center;
-        gap: 1rem;
-    }
-}
-
-.tarjeta-libro:hover {
-    border-color: #cbd5e1;
-    box-shadow: var(--sombra-sm);
-}
-
-.info-libro {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-}
-
-.titulo-libro {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: var(--color-texto);
-}
-
-.autor-libro {
-    color: var(--color-texto-secundario);
-    font-size: 0.925rem;
-    font-weight: 500;
-}
-
-.detalles-libro {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    font-size: 0.825rem;
-    color: var(--color-texto-secundario);
-    margin-top: 0.25rem;
-}
-
-.badge-genero {
-    background-color: #e0f2fe;
-    color: #0369a1;
-    padding: 0.2rem 0.6rem;
-    border-radius: 12px;
-    font-weight: 600;
-}
-
-.acciones-libro {
-    display: flex;
-    align-items: center;
-    margin-top: 0.75rem;
-}
-
-@media (min-width: 600px) {
-    .acciones-libro {
-        margin-top: 0;
-    }
-}
-
-/* Estados Vacío / Cargando */
 .mensaje-cargando,
 .mensaje-vacio {
+    grid-column: 1 / -1;
+    padding: 36px 20px;
     text-align: center;
-    padding: 2.5rem 1rem;
-    color: var(--color-texto-secundario);
-    font-size: 0.95rem;
+    color: var(--tinta-suave);
+    background: var(--blanco);
+    border: 1px dashed var(--linea);
+    border-radius: var(--radio);
+}
+
+/* --------------------------------------------------------------------------
+   9. Lista de libros (tarjetas tipo portada)
+   El JS inserta un elemento por libro dentro de #contenedor-libros.
+   Los estilos aplican a cualquier hijo directo, sin importar su clase.
+   -------------------------------------------------------------------------- */
+.seccion-lista h2 {
+    margin-bottom: 24px;
+}
+
+.contenedor-libros {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 20px;
+}
+
+.contenedor-libros > :not(.mensaje-cargando):not(.mensaje-vacio) {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 6px;
+    min-height: 270px;
+    padding: 22px 18px 20px;
+    overflow: hidden;
+    color: var(--blanco);
+    background-color: var(--libro-ocre);
+    /* Textura de puntos + brillo suave + lomo del libro */
+    background-image:
+        linear-gradient(90deg, rgba(0, 0, 0, 0.16) 0, rgba(255, 255, 255, 0.06) 5px, transparent 9px),
+        linear-gradient(160deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.12)),
+        radial-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1.3px);
+    background-size: auto, auto, 20px 20px;
+    border-radius: 6px 12px 12px 6px;
+    box-shadow: 0 16px 30px -18px rgba(20, 48, 63, 0.6);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.contenedor-libros > :not(.mensaje-cargando):not(.mensaje-vacio):hover {
+    transform: translateY(-4px);
+    box-shadow: 0 24px 36px -18px rgba(20, 48, 63, 0.7);
+}
+
+/* Sello circular decorativo en la esquina */
+.contenedor-libros > :not(.mensaje-cargando):not(.mensaje-vacio)::after {
+    content: "";
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    box-shadow:
+        0 0 0 6px rgba(255, 255, 255, 0.04),
+        0 0 0 7px rgba(255, 255, 255, 0.28);
+    pointer-events: none;
+}
+
+/* Colores rotativos por portada */
+.contenedor-libros > :nth-child(4n + 2):not(.mensaje-cargando) {
+    background-color: var(--libro-marino);
+}
+
+.contenedor-libros > :nth-child(4n + 3):not(.mensaje-cargando) {
+    background-color: var(--libro-coral);
+}
+
+.contenedor-libros > :nth-child(4n + 4):not(.mensaje-cargando) {
+    background-color: var(--libro-salvia);
+}
+
+/* Contenido interno de cada tarjeta */
+.contenedor-libros h3,
+.contenedor-libros h4 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--blanco);
+    text-wrap: balance;
+}
+
+.contenedor-libros p {
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.82);
+}
+
+/* Etiqueta de género (si el JS la genera con alguna de estas clases) */
+.contenedor-libros .genero,
+.contenedor-libros .libro-genero,
+.contenedor-libros .etiqueta {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    padding: 3px 10px;
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--blanco);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: 999px;
+}
+
+/* --------------------------------------------------------------------------
+   10. Responsive
+   -------------------------------------------------------------------------- */
+@media (max-width: 920px) {
+    .contenido-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .seccion-formulario {
+        position: static;
+    }
+}
+
+@media (max-width: 560px) {
+    .contenedor-principal {
+        padding: 20px 16px 48px;
+    }
+
+    .encabezado {
+        padding: 36px 24px;
+        margin-bottom: 36px;
+    }
+
+    .encabezado::after {
+        right: -160px;
+        opacity: 0.6;
+    }
+
+    .contenedor-libros {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .contenedor-libros > :not(.mensaje-cargando):not(.mensaje-vacio) {
+        min-height: 220px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+    }
 }
