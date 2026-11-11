@@ -1,0 +1,10 @@
+package views
+
+import db "servidor-go/db/sqlc"
+
+templ IndexPage(libros []db.Libro) {
+	@Layout("Biblioteca Digital - Gestión de Libros") {
+		@EntityForm()
+		@EntityList(libros)
+	}
+}

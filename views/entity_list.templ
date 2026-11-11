@@ -1,0 +1,42 @@
+package views
+
+import (
+	"fmt"
+	db "servidor-go/db/sqlc"
+)
+
+templ EntityList(libros []db.Libro) {
+	<article>
+		<header>
+			<h3>Catálogo de Libros</h3>
+		</header>
+		if len(libros) == 0 {
+			<p><em>No hay libros registrados aún. Completa el formulario de arriba para agregar uno.</em></p>
+		} else {
+			<div class="overflow-auto">
+				<table class="striped">
+					<thead>
+						<tr>
+							<th scope="col">#</th>
+							<th scope="col">Título</th>
+							<th scope="col">Autor</th>
+							<th scope="col">Género</th>
+							<th scope="col">Fecha de Publicación</th>
+						</tr>
+					</thead>
+					<tbody>
+						for _, libro := range libros {
+							<tr>
+								<th scope="row">{ fmt.Sprint(libro.ID) }</th>
+								<td><strong>{ libro.Titulo }</strong></td>
+								<td>{ libro.Autor }</td>
+								<td><kbd>{ libro.Genero }</kbd></td>
+								<td>{ libro.FechaPublicacion.Format("2006-01-02") }</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+	</article>
+}

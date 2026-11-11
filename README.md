@@ -1,142 +1,100 @@
-# Mi Biblioteca
+# Mi Biblioteca (TP5 - Renderizado del Lado del Servidor con Templ)
 
-API web desarrollada en Go para administrar usuarios, libros y la relación de lectura entre ambos. Permite registrar usuarios y libros, asociarlos, indicar si un libro fue leído y consultar libros leídos por usuario o usuarios asociados a un libro.
+Aplicación web desarrollada en **Go** utilizando **Server-Side Rendering (SSR)** con **`templ`**, **`Pico.css`**, **`sqlc`** y **PostgreSQL**. Permite visualizar el catálogo de libros y registrar nuevos ejemplares mediante formularios HTML tradicionales aplicando el patrón **Post/Redirect/Get (PRG)**, sin JavaScript en el cliente.
 
 ## Entidades
 
-- Libro: título, autor, fecha de publicación y género.
-- Usuario: nombre, apellido, email, contraseña y fecha de nacimiento. La API no expone la contraseña en las respuestas.
-- Usuario-libro: relación entre ambas entidades, con estado de lectura (`leido`) y fecha de lectura.
+- **Libro**: título, autor, fecha de publicación (`YYYY-MM-DD`) y género.
 
 ## Tecnologías
 
-- Go
-- PostgreSQL
-- sqlc
-- Docker Compose
-- Hurl
-- HTML
+- **Go** (net/http)
+- **Templ** (`github.com/a-h/templ`) para generación de vistas HTML con tipado estricto
+- **Pico.css** (vía CDN) para estilos semánticos
+- **PostgreSQL 15**
+- **sqlc** para generación de código SQL en Go
+- **Docker** y **Docker Compose**
 
 ## Requisitos
 
 - Docker y Docker Compose.
-- No hace falta instalar Go, `sqlc`, Hurl ni `curl` en la máquina host: se usan desde el contenedor `app`.
-- Se necesita conexión a Internet para descargar las imágenes y construir `app` la primera vez.
+- **No es necesario instalar Go, `sqlc` ni `templ` en la máquina host**: todo se genera, compila y ejecuta dentro de los contenedores Docker.
+- Conexión a Internet para descargar imágenes/dependencias la primera vez y cargar Pico.css desde CDN.
 
 ## Obtener el proyecto
 
 ```bash
-git clone --branch tp3 --single-branch https://github.com/juli7etriXD/TP-Web-Grupo29.git
+git clone --branch tp5 --single-branch https://github.com/juli7etriXD/TP-Web-Grupo29.git
 cd TP-Web-Grupo29
-cp .env.example .env
 ```
 
-`.env.example` es la plantilla versionada con valores de desarrollo. Cópiala como `.env` para crear tu configuración local; modifica ese archivo solo si necesitas otros valores (`DB_USER`, `DB_PASSWORD`, `DB_PORT` o `DB_NAME`). No publiques credenciales personales ni agregues `.env` al repositorio. En Compose, la aplicación usa el nombre de servicio `postgres` como host de la base de datos.
+## Cómo ejecutar la aplicación
 
-## Ejecutar para desarrollo
-
-El proyecto se levanta con dos contenedores:
-
-- `postgres`: base de datos PostgreSQL.
-- `app`: servicio Go que incluye `go`, `sqlc` y `hurl` para compilar y correr la API.
-
-Desde la raíz del proyecto:
+Desde la raíz del proyecto, ejecuta cualquiera de los siguientes comandos equivalentes:
 
 ```bash
-docker compose up -d --build
+make run-app
 ```
+*(o directamente `./run-app.sh`)*
 
-Compose lee `.env` automáticamente. El comando construye y levanta los dos servicios: PostgreSQL (`postgres`) y la aplicación (`app`). Al iniciar, `app` ejecuta `sqlc generate` y luego `go run .`. La API queda disponible en `http://localhost:8080`.
+### ¿Qué automatiza `make run-app`?
+El script [`run-app.sh`](run-app.sh) ejecuta de forma automática todo el ciclo de vida:
+1. **Tareas previas**:
+   - Crea `.env` a partir de `.env.example` si no existe.
+   - Limpia contenedores y volúmenes previos (`docker compose down --volumes --remove-orphans`).
+   - Construye la imagen de la aplicación (`app`) con Go, `sqlc` y `templ`.
+   - Levanta el motor de base de datos PostgreSQL (`postgres`) y espera activamente con `pg_isready` hasta que esté listo para aceptar conexiones.
+   - Ejecuta `sqlc generate`, `templ generate` y compila el proyecto (`go build ./...`).
+2. **Ejecución**:
+   - Compila e inicia el servidor web escuchando en **[http://localhost:8080](http://localhost:8080)**.
+3. **Tareas posteriores**:
+   - Al presionar `Ctrl+C` (o finalizar la ejecución), un `trap` automático detiene los contenedores y elimina contenedores y volúmenes (`docker compose down --volumes --remove-orphans`).
 
-Para detener los contenedores manteniendo el volumen de datos:
+---
 
-```bash
-docker compose down
-```
+### Otros comandos disponibles en el `Makefile`
 
-Para ver los registros de la aplicación:
+- `make up`: levanta la base de datos y la aplicación en segundo plano (`docker compose up -d --build`).
+- `make stop`: detiene los contenedores y elimina los volúmenes.
+- `make test`: ejecuta la suite de pruebas Go dentro del contenedor.
+- `make generate` / `make build` / `make run`: útiles si tienes Go, `sqlc` y `templ` instalados localmente.
 
-```bash
-docker compose logs -f app
-```
+## Funcionamiento y Rutas SSR
 
-`make stop` también detiene los contenedores, pero además **borra el volumen de PostgreSQL y todos sus datos**.
+En esta versión la aplicación abandona la arquitectura API JSON + JavaScript en el cliente para renderizar HTML directamente desde el servidor Go:
 
-## API HTTP
+| Método y Ruta | Descripción |
+| --- | --- |
+| `GET /` | Consulta todos los libros en PostgreSQL mediante `sqlc` (`GetAllLibros`) y renderiza la vista `views.IndexPage` con `templ`. |
+| `POST /libros` | Procesa los datos del formulario (`application/x-www-form-urlencoded`), valida y guarda el libro con `CreateLibro` y redirige a `/` mediante `303 See Other` (**patrón Post/Redirect/Get**). |
+| `GET /libros` | Redirige a `/` para comodidad de navegación. |
+| `GET /static/` | Sirve archivos estáticos auxiliares si se requieren. |
 
-Las fechas se envían como `YYYY-MM-DD`. Las solicitudes con cuerpo deben incluir `Content-Type: application/json`. Los IDs de las rutas son enteros positivos. Las respuestas de error son JSON con la propiedad `error`.
-
-### Validaciones y reglas de negocio:
-- Las fechas (`fecha_nacimiento`, `fecha_publicacion`) no pueden ser futuras y deben respetar el formato `YYYY-MM-DD`. La fecha de nacimiento no puede ser anterior al año 1900.
-- El `email` debe poseer un formato sintáctico válido.
-- La `password` debe contener al menos 6 caracteres.
-- Conflictos de unicidad (como registrar un email ya existente o asociar un libro ya vinculado) devuelven `409 Conflict`.
-- Consultas o asociaciones sobre entidades no encontradas devuelven `404 Not Found`.
-
-| Método y ruta | Descripción | JSON de entrada | Respuestas principales |
-| --- | --- | --- | --- |
-| `GET /libros` | Listar libros | — | `200` |
-| `GET /libros/{id}` | Obtener un libro | — | `200`, `400`, `404` |
-| `POST /libros` | Crear libro | `{"titulo":"Ficciones","autor":"Jorge Luis Borges","fecha_publicacion":"1944-01-01","genero":"Ficción"}` | `201`, `400` |
-| `PUT /libros/{id}` | Actualizar libro | mismo formato que al crear | `200`, `400`, `404` |
-| `DELETE /libros/{id}` | Eliminar libro | — | `204`, `400`, `404` |
-| `GET /usuarios` | Listar usuarios | — | `200` |
-| `GET /usuarios/{id}` | Obtener un usuario | — | `200`, `400`, `404` |
-| `POST /usuarios` | Crear usuario | `{"nombre":"Ana","apellido":"Pérez","email":"ana@example.com","password":"clave123","fecha_nacimiento":"1998-04-15"}` | `201`, `400`, `409` |
-| `PUT /usuarios/{id}` | Actualizar usuario | `{"nombre":"Ana","apellido":"Pérez","email":"ana@example.com","password":"clave456"}` | `200`, `400`, `404`, `409` |
-| `DELETE /usuarios/{id}` | Eliminar usuario | — | `204`, `400`, `404` |
-| `POST /usuarios/{usuario_id}/libros` | Asociar libro a usuario | `{"libro_id":1,"leido":false}` | `201`, `400`, `404`, `409` |
-| `GET /usuarios/{usuario_id}/libros/leidos` | Listar libros leídos por usuario | — | `200`, `400`, `404` |
-| `GET /libros/{libro_id}/usuarios` | Listar usuarios asociados a un libro | — | `200`, `400`, `404` |
-| `PATCH /usuarios/{usuario_id}/libros/{libro_id}` | Cambiar estado de lectura | `{"leido":true}` | `200`, `400`, `404` |
-| `DELETE /usuarios/{usuario_id}/libros/{libro_id}` | Quitar asociación | — | `204`, `400`, `404` |
-
-Los errores inesperados del servidor o la base de datos pueden responder `500`.
-
-## Pruebas
-
-Ejecuta el flujo integrado desde la raíz:
-
-```bash
-make test-api
-```
-
-Este es el comando de prueba para entregar. Levanta PostgreSQL y la app con Docker Compose; dentro del contenedor `app` genera el código con `sqlc`, compila el proyecto, ejecuta las peticiones de `request.hurl` con Hurl y corre `go test -v ./tests/...`. No requiere Go, `sqlc`, Hurl ni `curl` instalados en la máquina local.
-
-Al terminar, tanto si las pruebas pasan como si fallan, el objetivo detiene los contenedores y ejecuta `docker compose down --volumes --remove-orphans`. Esto borra el volumen de PostgreSQL y sus datos; no lo uses si necesitas conservarlos.
-
-Para ejecutar solo las pruebas HTTP manualmente, primero levanta ambos servicios con `docker compose up -d --build`. Luego ejecuta:
-
-```bash
-docker compose exec -T app sh -lc 'hurl --test --variable "email=ana.$(date +%s%N)@example.com" request.hurl'
-```
-
-Cuando termines, usa `docker compose down` para detenerlos conservando los datos.
+### Componentes Templ (`views/`)
+- `views/layout.templ`: estructura base HTML5 (`<head>`, `<body>`, barra de navegación y enlace a Pico.css).
+- `views/entity_form.templ`: formulario clásico para crear un libro (`action="/libros" method="POST"`).
+- `views/entity_list.templ`: componente que recibe `[]db.Libro` y renderiza la tabla del catálogo o un estado vacío.
+- `views/index.templ`: página principal (`IndexPage`) que compone el layout, el formulario y la lista.
 
 ### Si falla la construcción de `app`
-
-Si la construcción falla con `Could not resolve host` o `lookup ... i/o timeout` al acceder a `github.com` o `proxy.golang.org`, Docker no pudo resolver el DNS para descargar Hurl o los módulos Go. Las pruebas todavía no se ejecutaron. Comprueba la conexión a Internet, VPN/proxy y DNS de Docker; después vuelve a ejecutar `make test-api`. Si el host tiene Internet pero el error persiste dentro del build, reinicia Docker y revisa la configuración DNS del daemon o de Docker Desktop. El log puede mostrar que el servidor DNS de Docker agotó el tiempo de espera. `--no-cache` por sí solo no corrige un fallo de DNS.
+Si la construcción de la imagen falla con `Could not resolve host` o `lookup ... i/o timeout` al acceder a `github.com` o `proxy.golang.org`, Docker tuvo un fallo de resolución DNS. Verifica tu conexión a Internet, VPN/proxy y la configuración DNS del daemon de Docker o Docker Desktop, y vuelve a intentar `make run-app`.
 
 ## Estructura del proyecto
 
 ```text
 .
-├── api/
-│   ├── helpers.go
-│   ├── libro_handler.go
-│   ├── usuario_handler.go
-│   └── usuario_libro_handler.go
+├── api/                     # Handlers previos de TP3
 ├── db/
-│   ├── queries/
-│   ├── schema/
-│   └── sqlc/
-├── static/
-│   └── index.html
-├── tests/
-│   ├── libro_test.go
-│   ├── setup_test.go
-│   ├── usuario_libro_test.go
-│   └── usuario_test.go
+│   ├── queries/             # Consultas SQL para sqlc
+│   ├── schema/              # Esquema inicial PostgreSQL
+│   └── sqlc/                # Código Go generado por sqlc
+├── static/                  # Recursos estáticos CSS (sin archivos .js)
+├── tests/                   # Tests de integración
+├── views/                   # Componentes .templ y archivos *_templ.go generados
+│   ├── entity_form.templ
+│   ├── entity_list.templ
+│   ├── index.templ
+│   └── layout.templ
 ├── .dockerignore
 ├── .env.example
 ├── .gitignore
@@ -147,7 +105,7 @@ Si la construcción falla con `Could not resolve host` o `lookup ... i/o timeout
 ├── main.go
 ├── Makefile
 ├── README.md
-├── request.hurl
+├── run-app.sh
 ├── sqlc.yaml
 └── test.sh
 ```

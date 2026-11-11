@@ -1,0 +1,32 @@
+package views
+
+templ Layout(title string) {
+	<!DOCTYPE html>
+	<html lang="es" data-theme="light">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<title>{ title }</title>
+			<!-- Hoja de estilos semántica Pico.css -->
+			<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
+		</head>
+		<body>
+			<header class="container">
+				<nav>
+					<ul>
+						<li><strong> Biblioteca Digital</strong></li>
+					</ul>
+					<ul>
+						<li><small>Renderizado del lado del servidor (SSR con Go y Templ)</small></li>
+					</ul>
+				</nav>
+			</header>
+			<main class="container">
+				{ children... }
+			</main>
+			<footer class="container" style="text-align: center; margin-top: 3rem;">
+				<small>Trabajo Práctico 5 - Programación Web</small>
+			</footer>
+		</body>
+	</html>
+}
