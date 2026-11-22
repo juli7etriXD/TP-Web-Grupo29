@@ -9,6 +9,8 @@ templ Layout(title string) {
 			<title>{ title }</title>
 			<!-- Hoja de estilos semántica Pico.css -->
 			<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
+			<!-- HTMX para interactividad sin recargas de página -->
+			<script src="https://unpkg.com/htmx.org@2.0.4"></script>
 		</head>
 		<body>
 			<header class="container">
@@ -17,7 +19,7 @@ templ Layout(title string) {
 						<li><strong> Biblioteca Digital</strong></li>
 					</ul>
 					<ul>
-						<li><small>Renderizado del lado del servidor (SSR con Go y Templ)</small></li>
+						<li><small>Interfaces Reactivas (Go + Templ + HTMX)</small></li>
 					</ul>
 				</nav>
 			</header>
@@ -25,7 +27,7 @@ templ Layout(title string) {
 				{ children... }
 			</main>
 			<footer class="container" style="text-align: center; margin-top: 3rem;">
-				<small>Trabajo Práctico 5 - Programación Web</small>
+				<small>Trabajo Práctico 6 - Programación Web</small>
 			</footer>
 		</body>
 	</html>

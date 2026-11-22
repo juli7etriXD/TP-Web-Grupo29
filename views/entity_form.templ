@@ -5,7 +5,12 @@ templ EntityForm() {
 		<header>
 			<h3>Registrar Nuevo Libro</h3>
 		</header>
-		<form action="/libros" method="POST">
+		<form
+			hx-post="/libros"
+			hx-target="#lista-libros"
+			hx-swap="outerHTML"
+			hx-on::after-request="if(event.detail.successful) this.reset()"
+		>
 			<div class="grid">
 				<label for="titulo">
 					Título

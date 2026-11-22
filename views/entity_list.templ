@@ -6,7 +6,8 @@ import (
 )
 
 templ EntityList(libros []db.Libro) {
-	<article>
+	<article id="lista-libros">
+
 		<header>
 			<h3>Catálogo de Libros</h3>
 		</header>
@@ -22,6 +23,7 @@ templ EntityList(libros []db.Libro) {
 							<th scope="col">Autor</th>
 							<th scope="col">Género</th>
 							<th scope="col">Fecha de Publicación</th>
+							<th scope="col">Acciones</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -32,6 +34,18 @@ templ EntityList(libros []db.Libro) {
 								<td>{ libro.Autor }</td>
 								<td><kbd>{ libro.Genero }</kbd></td>
 								<td>{ libro.FechaPublicacion.Format("2006-01-02") }</td>
+								<td>
+									<button
+										type="button"
+										class="secondary outline"
+										hx-delete={ fmt.Sprintf("/libros/%d", libro.ID) }
+										hx-target="closest tr"
+										hx-swap="outerHTML"
+										hx-confirm={ fmt.Sprintf("¿Seguro que deseas eliminar '%s'?", libro.Titulo) }
+									>
+										Borrar
+									</button>
+								</td>
 							</tr>
 						}
 					</tbody>
