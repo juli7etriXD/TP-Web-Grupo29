@@ -1,22 +1,22 @@
-# Mi Biblioteca (TP6 - Interfaces Reactivas con HTMX)
+# Mi Biblioteca Digital
 
-Aplicación web desarrollada en **Go** utilizando **Server-Side Rendering (SSR)** con **`templ`**, **HTMX**, **`Pico.css`**, **`sqlc`** y **PostgreSQL**. Evoluciona la aplicación SSR del TP5 para brindar una experiencia interactiva tipo **SPA (Single Page Application)** —creación, edición inline, cambio de estado de lectura y borrado de libros en tiempo real sin recargas completas de página— sin escribir archivos JavaScript propios (`.js`).
+Aplicación web desarrollada en **Go** utilizando **Server-Side Rendering (SSR)** con **`templ`**, **HTMX**, **`Pico.css`**, **`sqlc`** y **PostgreSQL**. La aplicación SSR brinda una experiencia interactiva tipo **SPA (Single Page Application)**.
 
 ## Funcionalidades
 
 - **Visualización del catálogo**: listado dinámico de libros almacenados en PostgreSQL ordenados por ID.
 - **Creación sin recarga de página**: envío asíncrono del formulario (`POST /libros`) que actualiza únicamente el contenedor de la lista con el fragmento HTML renderizado por el servidor y limpia el formulario tras un guardado exitoso (incluye validación de campos obligatorios y control de fechas futuras).
-- **Edición inline sin recarga de página**: botón **Editar** por fila (`GET /libros/{id}/edit`) que convierte la fila en inputs editables para **Guardar** (`PUT /libros/{id}`) o **Cancelar** (`GET /libros/{id}`) actualizando únicamente ese `<tr>`.
-- **Estado de lectura (`Leído` / `No leído`)**: botón interactivo por fila (`PATCH /libros/{id}/leido`) que alterna el estado `leido` en PostgreSQL y actualiza la fila al instante.
-- **Borrado sin recarga de página**: eliminación individual desde cada fila (`DELETE /libros/{id}`) con confirmación previa (`hx-confirm`) y remoción inmediata del elemento del DOM al recibir `200 OK` vacío.
+- **Edición inline sin recarga de página**: botón **Editar** por fila  que convierte la fila en inputs editables para **Guardar**  o **Cancelar** actualizando únicamente ese.
+- **Estado de lectura (`Leído` / `No leído`)**: botón interactivo por fila que alterna el estado `leido` en PostgreSQL y actualiza la fila al instante.
+- **Borrado sin recarga de página**: eliminación individual desde cada fila con confirmación previa y quita inmediatamente del elemento del DOM al recibir `200 OK` vacío.
 
 ## Entidades
 
-- **Libro**: `id`, `titulo`, `autor`, `fecha_publicacion` (`YYYY-MM-DD`), `genero` y `leido` (`boolean`, por defecto `false`).
+- **Libro**: `id`, `titulo`, `autor`, `fecha_publicacion` (`YYYY-MM-DD`), `genero` y `leido`.
 
 ## Tecnologías
 
-- **Go 1.22** (`net/http` con enrutamiento por método y parámetros de ruta)
+- **Go 1.22** 
 - **Templ** (`github.com/a-h/templ`) para componentes HTML tipados en Go
 - **HTMX 2** (vía CDN) para interactividad declarativa basada en hipermedia
 - **Pico.css** (vía CDN) para estilos semánticos
@@ -64,7 +64,7 @@ El script [`run-app.sh`](run-app.sh) gestiona automáticamente todo el ciclo de 
 
 ### Otros comandos disponibles en el `Makefile`
 
-- `make up`: levanta la base de datos y la aplicación en segundo plano (`docker compose up -d --build`).
+- `make up`: levanta la base de datos y la aplicación en segundo plano.
 - `make stop`: detiene los contenedores y elimina los volúmenes.
 - `make restart`: reinicia y reconstruye el entorno completo.
 - `make test`: levanta PostgreSQL y la aplicación en Docker, compila y ejecuta la suite de pruebas Go (`go test -v ./tests/...`), limpiando todo al finalizar.
@@ -90,16 +90,6 @@ En esta entrega final se elimina el patrón clásico *Post/Redirect/Get* con rec
 | `GET /libros` | `303 See Other` | Redirige a `/` por comodidad de navegación. |
 | `GET /static/` | Archivos estáticos | Sirve recursos estáticos auxiliares (sin archivos `.js`). |
 
-### Componentes Templ (`views/`)
-
-- **`views/layout.templ`**: estructura HTML5 base que incluye **Pico.css** y el script de **HTMX** (`https://unpkg.com/htmx.org@2.0.4`) en el `<head>`.
-- **`views/index.templ`**: página principal (`IndexPage`) que compone `@Layout`, `@EntityForm()` y `@EntityList(libros)`.
-- **`views/entity_form.templ`**: formulario reactivo con `hx-post="/libros"`, `hx-target="#lista-libros"`, `hx-swap="outerHTML"` y `hx-on::after-request` para limpiar el formulario tras una creación exitosa.
-- **`views/entity_list.templ`**:
-  - `EntityList`: renderiza el catálogo dentro de `<article id="lista-libros">`.
-  - `EntityRow`: fila de lectura con botón interactivo **Leído / No leído** (`hx-patch="/libros/{id}/leido"`), botón **Editar** (`hx-get="/libros/{id}/edit"`) y botón **Borrar** (`hx-delete="/libros/{id}"`, `hx-confirm`), todos operando sobre `hx-target="closest tr"` y `hx-swap="outerHTML"`.
-  - `EntityRowEdit`: fila con inputs inline precargados y botones **Guardar** (`hx-put="/libros/{id}"`, `hx-include="closest tr"`) y **Cancelar** (`hx-get="/libros/{id}"`).
-
 ---
 
 ## Verificación Manual
@@ -124,8 +114,8 @@ En esta entrega final se elimina el patrón clásico *Post/Redirect/Get* con rec
 ```text
 .
 ├── db/
-│   ├── queries/             # Consultas SQL para sqlc (CreateLibro, GetAllLibros, UpdateLibro, ToggleLibroLeido, DeleteLibro)
-│   ├── schema/              # Esquema inicial PostgreSQL (tabla libro con columna leido)
+│   ├── queries/             # Consultas SQL para sqlc
+│   ├── schema/              # Esquema inicial PostgreSQL 
 │   └── sqlc/                # Código Go generado por sqlc
 ├── handlers/                # Paquete de rutas, handlers SSR/HTMX y helpers de validación/render
 │   ├── helpers.go

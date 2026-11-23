@@ -9,7 +9,7 @@ templ EntityForm() {
 			hx-post="/libros"
 			hx-target="#lista-libros"
 			hx-swap="outerHTML"
-			hx-on::after-request="if(event.detail.successful) this.reset()"
+			hx-on::after-request="if(event.detail.successful && !event.detail.xhr.getResponseHeader('HX-Retarget')) this.reset()"
 		>
 			<div class="grid">
 				<label for="titulo">
@@ -39,7 +39,7 @@ templ EntityForm() {
 					<input 
 						type="date" 
 						id="fecha_publicacion" 
-						name="fecha_publicacion" 
+						name="fecha_publicacion"
 						required
 					/>
 				</label>

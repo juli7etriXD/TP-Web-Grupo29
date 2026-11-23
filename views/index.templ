@@ -4,6 +4,7 @@ import db "servidor-go/db/sqlc"
 
 templ IndexPage(libros []db.Libro) {
 	@Layout("Biblioteca Digital - Gestión de Libros") {
+		<div id="mensaje-error"></div>
 		@EntityForm()
 		@EntityList(libros)
 	}

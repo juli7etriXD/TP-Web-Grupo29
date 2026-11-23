@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/a-h/templ"
+	"servidor-go/views"
 )
 
 type libroForm struct {
@@ -24,6 +25,26 @@ func renderHTML(w http.ResponseWriter, r *http.Request, component templ.Componen
 		log.Printf("Error al renderizar vista: %v", err)
 		http.Error(w, "Error al renderizar la vista", http.StatusInternalServerError)
 	}
+}
+
+// renderHTMLWithClearError renderiza el componente y limpia cualquier alerta de error previa mediante OOB swap
+func renderHTMLWithClearError(w http.ResponseWriter, r *http.Request, component templ.Component) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := component.Render(r.Context(), w); err != nil {
+		log.Printf("Error al renderizar vista: %v", err)
+		http.Error(w, "Error al renderizar la vista", http.StatusInternalServerError)
+		return
+	}
+	if err := views.ClearError().Render(r.Context(), w); err != nil {
+		log.Printf("Error al limpiar alerta de error: %v", err)
+	}
+}
+
+// renderErrorHTMX redirige una alerta de error al contenedor #mensaje-error sin pisar la tabla ni la fila
+func renderErrorHTMX(w http.ResponseWriter, r *http.Request, mensaje string) {
+	w.Header().Set("HX-Retarget", "#mensaje-error")
+	w.Header().Set("HX-Reswap", "innerHTML")
+	renderHTML(w, r, views.ErrorAlert(mensaje))
 }
 
 // parseLibroID valida que un parámetro de ruta sea un entero positivo (int32)

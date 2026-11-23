@@ -29,7 +29,7 @@ func handleCreateLibro(queries *db.Queries) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		form, errMsg := parseLibroForm(r)
 		if errMsg != "" {
-			http.Error(w, errMsg, http.StatusBadRequest)
+			renderErrorHTMX(w, r, errMsg)
 			return
 		}
 
@@ -42,18 +42,18 @@ func handleCreateLibro(queries *db.Queries) http.HandlerFunc {
 
 		if _, err := queries.CreateLibro(r.Context(), params); err != nil {
 			log.Printf("Error al crear libro en la BD: %v", err)
-			http.Error(w, "Error al guardar el libro", http.StatusInternalServerError)
+			renderErrorHTMX(w, r, "Error al guardar el libro")
 			return
 		}
 
 		libros, err := queries.GetAllLibros(r.Context())
 		if err != nil {
 			log.Printf("Error al consultar libros tras creación: %v", err)
-			http.Error(w, "Error al obtener la lista actualizada de libros", http.StatusInternalServerError)
+			renderErrorHTMX(w, r, "Error al obtener la lista actualizada de libros")
 			return
 		}
 
-		renderHTML(w, r, views.EntityList(libros))
+		renderHTMLWithClearError(w, r, views.EntityList(libros))
 	}
 }
 
@@ -77,7 +77,7 @@ func handleGetLibroRow(queries *db.Queries) http.HandlerFunc {
 			return
 		}
 
-		renderHTML(w, r, views.EntityRow(libro))
+		renderHTMLWithClearError(w, r, views.EntityRow(libro))
 	}
 }
 
@@ -110,13 +110,13 @@ func handleUpdateLibro(queries *db.Queries) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, ok := parseLibroID(r.PathValue("id"))
 		if !ok {
-			http.Error(w, "ID de libro inválido", http.StatusBadRequest)
+			renderErrorHTMX(w, r, "ID de libro inválido")
 			return
 		}
 
 		form, errMsg := parseLibroForm(r)
 		if errMsg != "" {
-			http.Error(w, errMsg, http.StatusBadRequest)
+			renderErrorHTMX(w, r, errMsg)
 			return
 		}
 
@@ -129,23 +129,23 @@ func handleUpdateLibro(queries *db.Queries) http.HandlerFunc {
 		})
 		if err != nil {
 			log.Printf("Error al actualizar libro %d en la BD: %v", id, err)
-			http.Error(w, "Error al actualizar el libro", http.StatusInternalServerError)
+			renderErrorHTMX(w, r, "Error al actualizar el libro")
 			return
 		}
 
 		if rowsAffected == 0 {
-			http.Error(w, "Libro no encontrado", http.StatusNotFound)
+			renderErrorHTMX(w, r, "Libro no encontrado")
 			return
 		}
 
 		libroActualizado, err := queries.GetLibroByID(r.Context(), id)
 		if err != nil {
 			log.Printf("Error al consultar libro actualizado %d: %v", id, err)
-			http.Error(w, "Error al obtener el libro actualizado", http.StatusInternalServerError)
+			renderErrorHTMX(w, r, "Error al obtener el libro actualizado")
 			return
 		}
 
-		renderHTML(w, r, views.EntityRow(libroActualizado))
+		renderHTMLWithClearError(w, r, views.EntityRow(libroActualizado))
 	}
 }
 
