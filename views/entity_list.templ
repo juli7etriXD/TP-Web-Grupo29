@@ -7,7 +7,6 @@ import (
 
 templ EntityList(libros []db.Libro) {
 	<article id="lista-libros">
-
 		<header>
 			<h3>Catálogo de Libros</h3>
 		</header>
@@ -23,34 +22,139 @@ templ EntityList(libros []db.Libro) {
 							<th scope="col">Autor</th>
 							<th scope="col">Género</th>
 							<th scope="col">Fecha de Publicación</th>
+							<th scope="col">Estado</th>
 							<th scope="col">Acciones</th>
 						</tr>
 					</thead>
 					<tbody>
 						for _, libro := range libros {
-							<tr>
-								<th scope="row">{ fmt.Sprint(libro.ID) }</th>
-								<td><strong>{ libro.Titulo }</strong></td>
-								<td>{ libro.Autor }</td>
-								<td><kbd>{ libro.Genero }</kbd></td>
-								<td>{ libro.FechaPublicacion.Format("2006-01-02") }</td>
-								<td>
-									<button
-										type="button"
-										class="secondary outline"
-										hx-delete={ fmt.Sprintf("/libros/%d", libro.ID) }
-										hx-target="closest tr"
-										hx-swap="outerHTML"
-										hx-confirm={ fmt.Sprintf("¿Seguro que deseas eliminar '%s'?", libro.Titulo) }
-									>
-										Borrar
-									</button>
-								</td>
-							</tr>
+							@EntityRow(libro)
 						}
 					</tbody>
 				</table>
 			</div>
 		}
 	</article>
+}
+
+templ EntityRow(libro db.Libro) {
+	<tr>
+		<th scope="row">{ fmt.Sprint(libro.ID) }</th>
+		<td><strong>{ libro.Titulo }</strong></td>
+		<td>{ libro.Autor }</td>
+		<td><kbd>{ libro.Genero }</kbd></td>
+		<td>{ libro.FechaPublicacion.Format("2006-01-02") }</td>
+		<td>
+			if libro.Leido {
+				<button
+					type="button"
+					hx-patch={ fmt.Sprintf("/libros/%d/leido", libro.ID) }
+					hx-target="closest tr"
+					hx-swap="outerHTML"
+				>
+					Leído
+				</button>
+			} else {
+				<button
+					type="button"
+					class="secondary outline"
+					hx-patch={ fmt.Sprintf("/libros/%d/leido", libro.ID) }
+					hx-target="closest tr"
+					hx-swap="outerHTML"
+				>
+					No leído
+				</button>
+			}
+		</td>
+		<td>
+			<div role="group">
+				<button
+					type="button"
+					class="outline"
+					hx-get={ fmt.Sprintf("/libros/%d/edit", libro.ID) }
+					hx-target="closest tr"
+					hx-swap="outerHTML"
+				>
+					Editar
+				</button>
+				<button
+					type="button"
+					class="secondary outline"
+					hx-delete={ fmt.Sprintf("/libros/%d", libro.ID) }
+					hx-target="closest tr"
+					hx-swap="outerHTML"
+					hx-confirm={ fmt.Sprintf("¿Seguro que deseas eliminar '%s'?", libro.Titulo) }
+				>
+					Borrar
+				</button>
+			</div>
+		</td>
+	</tr>
+}
+
+templ EntityRowEdit(libro db.Libro) {
+	<tr>
+		<th scope="row">{ fmt.Sprint(libro.ID) }</th>
+		<td>
+			<input
+				type="text"
+				name="titulo"
+				value={ libro.Titulo }
+				required
+			/>
+		</td>
+		<td>
+			<input
+				type="text"
+				name="autor"
+				value={ libro.Autor }
+				required
+			/>
+		</td>
+		<td>
+			<input
+				type="text"
+				name="genero"
+				value={ libro.Genero }
+				required
+			/>
+		</td>
+		<td>
+			<input
+				type="date"
+				name="fecha_publicacion"
+				value={ libro.FechaPublicacion.Format("2006-01-02") }
+				required
+			/>
+		</td>
+		<td>
+			if libro.Leido {
+				<small>Leído</small>
+			} else {
+				<small>No leído</small>
+			}
+		</td>
+		<td>
+			<div role="group">
+				<button
+					type="button"
+					hx-put={ fmt.Sprintf("/libros/%d", libro.ID) }
+					hx-include="closest tr"
+					hx-target="closest tr"
+					hx-swap="outerHTML"
+				>
+					Guardar
+				</button>
+				<button
+					type="button"
+					class="secondary outline"
+					hx-get={ fmt.Sprintf("/libros/%d", libro.ID) }
+					hx-target="closest tr"
+					hx-swap="outerHTML"
+				>
+					Cancelar
+				</button>
+			</div>
+		</td>
+	</tr>
 }

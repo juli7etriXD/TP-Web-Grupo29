@@ -42,7 +42,7 @@ func Layout(title string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</title><!-- Hoja de estilos semántica Pico.css --><link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css\"><!-- HTMX para interactividad sin recargas de página --><script src=\"https://unpkg.com/htmx.org@2.0.4\"></script></head><body><header class=\"container\"><nav><ul><li><strong>Biblioteca Digital</strong></li></ul><ul><li><small>Interfaces Reactivas (Go + Templ + HTMX)</small></li></ul></nav></header><main class=\"container\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</title><!-- Hoja de estilos semántica Pico.css --><link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css\"><!-- HTMX para interactividad sin recargas de página --><script src=\"https://unpkg.com/htmx.org@2.0.4\"></script></head><body><header class=\"container\"><nav><ul><li><h1 style=\"margin: 0; font-size: 2rem;\">Biblioteca Digital</h1></li></ul></nav></header><main class=\"container\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -50,7 +50,7 @@ func Layout(title string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</main><footer class=\"container\" style=\"text-align: center; margin-top: 3rem;\"><small>Trabajo Práctico 6 - Programación Web</small></footer></body></html>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</main></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
