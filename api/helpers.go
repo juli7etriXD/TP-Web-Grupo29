@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"net/mail"
 	"strconv"
 	"time"
 
@@ -48,15 +47,6 @@ func esErrorClaveForanea(err error) bool {
 		return pqErr.Code == "23503"
 	}
 	return false
-}
-
-// esEmailValido valida que el email tenga un formato sintáctico correcto
-func esEmailValido(email string) bool {
-	addr, err := mail.ParseAddress(email)
-	if err != nil {
-		return false
-	}
-	return addr.Address == email
 }
 
 // esFechaFutura comprueba si una fecha dada es posterior a la fecha actual

@@ -1,7 +1,7 @@
 # Mi Biblioteca (TP6 - Interfaces Reactivas con HTMX)
 
 Aplicación web desarrollada en **Go** utilizando **Server-Side Rendering (SSR)** con **`templ`**, **HTMX**, **`Pico.css`**, **`sqlc`** y **PostgreSQL**. Evoluciona la aplicación SSR del TP5 para brindar una experiencia interactiva tipo **SPA (Single Page Application)** —creación y borrado de libros en tiempo real sin recargas completas de página— sin escribir archivos JavaScript propios (`.js`).
-
+s
 ## Funcionalidades
 
 - **Visualización del catálogo**: listado dinámico de libros almacenados en PostgreSQL.
