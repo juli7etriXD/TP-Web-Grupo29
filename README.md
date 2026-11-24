@@ -6,9 +6,10 @@ Aplicación web desarrollada en **Go** utilizando **Server-Side Rendering (SSR)*
 
 - **Visualización del catálogo**: listado dinámico de libros almacenados en PostgreSQL ordenados por ID.
 - **Creación sin recarga de página**: envío asíncrono del formulario (`POST /libros`) que actualiza únicamente el contenedor de la lista con el fragmento HTML renderizado por el servidor y limpia el formulario tras un guardado exitoso (incluye validación de campos obligatorios y control de fechas futuras).
-- **Edición inline sin recarga de página**: botón **Editar** por fila  que convierte la fila en inputs editables para **Guardar**  o **Cancelar** actualizando únicamente ese.
+- **Edición inline sin recarga de página**: botón **Editar** por fila que convierte la fila en inputs editables para **Guardar** o **Cancelar** actualizando únicamente esa fila.
 - **Estado de lectura (`Leído` / `No leído`)**: botón interactivo por fila que alterna el estado `leido` en PostgreSQL y actualiza la fila al instante.
-- **Borrado sin recarga de página**: eliminación individual desde cada fila con confirmación previa y quita inmediatamente del elemento del DOM al recibir `200 OK` vacío.
+- **Borrado sin recarga de página**: eliminación individual desde cada fila con confirmación previa y remoción inmediata del elemento del DOM al recibir `200 OK` vacío.
+- **Notificaciones de error reactivas**: ante validaciones del servidor (por ejemplo, fechas de publicación futuras o campos vacíos), se responde con `HX-Retarget` hacia `#mensaje-error` sin pisar la tabla ni limpiar el formulario, y se limpia automáticamente mediante `hx-swap-oob="true"` al completar una operación válida.
 
 ## Entidades
 
@@ -88,7 +89,6 @@ En esta entrega final se elimina el patrón clásico *Post/Redirect/Get* con rec
 | `PATCH /libros/{id}/leido` | `200 OK` (`text/html`) | Alterna el estado `leido` de forma atómica con `ToggleLibroLeido` y devuelve `views.EntityRow(libro)`. |
 | `DELETE /libros/{id}` | `200 OK` (cuerpo vacío) | Elimina el registro mediante `DeleteLibro` y devuelve `200 OK` vacío (o `400`/`404` si el ID es inválido o inexistente). |
 | `GET /libros` | `303 See Other` | Redirige a `/` por comodidad de navegación. |
-| `GET /static/` | Archivos estáticos | Sirve recursos estáticos auxiliares (sin archivos `.js`). |
 
 ---
 
@@ -121,9 +121,9 @@ En esta entrega final se elimina el patrón clásico *Post/Redirect/Get* con rec
 │   ├── helpers.go
 │   ├── libro_handler.go
 │   └── routes.go
-├── static/                  # Recursos estáticos CSS (sin archivos .js)
 ├── tests/                   # Tests de integración Go (libro_test.go)
 ├── views/                   # Componentes .templ y archivos *_templ.go generados
+│   ├── alerts.templ
 │   ├── entity_form.templ
 │   ├── entity_list.templ
 │   ├── index.templ

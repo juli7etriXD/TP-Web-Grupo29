@@ -29,8 +29,4 @@ func RegisterRoutes(mux *http.ServeMux, queries *db.Queries) {
 	mux.HandleFunc("GET /libros", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	})
-
-	// Servir archivos estáticos (por ejemplo styles.css o imágenes)
-	fileServer := http.FileServer(http.Dir("./static"))
-	mux.Handle("GET /static/", http.StripPrefix("/static/", fileServer))
 }
